@@ -1,6 +1,6 @@
 package model;
 
-enum TrainingStatus {
+public enum TrainingStatus {
     PLANNED,
     IN_PROGRESS,
     COMPLETED
