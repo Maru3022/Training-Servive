@@ -14,5 +14,5 @@ public class Training {
     private LocalDate data;
     private UUID userId;
     private TrainingStatus status;
-
+    private String training_name;
 }
