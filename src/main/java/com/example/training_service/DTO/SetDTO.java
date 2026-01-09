@@ -1,5 +1,4 @@
-package DTO;
-
+package com.example.training_service.DTO;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;

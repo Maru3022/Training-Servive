@@ -1,13 +1,14 @@
-package Controller;
+package com.example.training_service.Controller;
 
-import DTO.ExerciseDTO;
-import DTO.TrainingDTO;
-import Service.TrainingService;
-import model.Exercise;
-import model.Training;
+
+
+import com.example.training_service.DTO.ExerciseDTO;
+import com.example.training_service.DTO.TrainingDTO;
+import com.example.training_service.Service.TrainingService;
+import com.example.training_service.model.Exercise;
+import com.example.training_service.model.Training;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,17 +19,11 @@ import java.util.UUID;
 public class TrainingController {
 
     private final TrainingService trainingService;
-    private final Exercise exercise;
-    private final ExerciseDTO exerciseDTO;
 
     public TrainingController(
-            TrainingService trainingService,
-            Exercise exercise,
-            ExerciseDTO exerciseDTO
+            TrainingService trainingService
     ) {
         this.trainingService = trainingService;
-        this.exercise = exercise;
-        this.exerciseDTO = exerciseDTO;
     }
 
     @PostMapping
@@ -43,7 +38,6 @@ public class TrainingController {
                 .body(created);
     }
 
-    //ToDo: Finish this method
     @PostMapping("/{id}/exercise")
     public ResponseEntity<Exercise> createExercise(
             @Valid @RequestBody ExerciseDTO dto,
@@ -89,7 +83,4 @@ public class TrainingController {
                 .status(HttpStatus.OK)
                 .body(trainingService.getTraining(id));
     }
-
-
-
 }

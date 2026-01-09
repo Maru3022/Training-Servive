@@ -1,15 +1,17 @@
-package Service;
+package com.example.training_service.Service;
 
-import DTO.ExerciseDTO;
-import DTO.TrainingDTO;
-import Repository.ExerciseRepository;
-import Repository.TrainingRepository;
-import model.Exercise;
-import model.Training;
+
+import com.example.training_service.DTO.ExerciseDTO;
+import com.example.training_service.DTO.TrainingDTO;
+import com.example.training_service.Repository.ExerciseRepository;
+import com.example.training_service.Repository.TrainingRepository;
+import com.example.training_service.model.Exercise;
+import com.example.training_service.model.Training;
+import jakarta.persistence.EntityExistsException;
+
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+
 import java.util.UUID;
 
 @Service
@@ -17,15 +19,13 @@ public class TrainingService {
 
     private final TrainingRepository trainingRepository;
     private final ExerciseRepository exerciseRepository;
-    private final ExerciseDTO exerciseDTO;
 
     public TrainingService(
             TrainingRepository trainingRepository,
-            ExerciseDTO exerciseDTO,
             ExerciseRepository exerciseRepository
     ) {
         this.trainingRepository = trainingRepository;
-        this.exerciseDTO = exerciseDTO;
+
         this.exerciseRepository = exerciseRepository;
     }
 
@@ -37,7 +37,6 @@ public class TrainingService {
          training.setId(UUID.randomUUID());
          training.setData(dto.data());
          training.setUserId(dto.userId());
-         training.setStatus(dto.status());
          training.setTraining_name(dto.training_name());
 
         return trainingRepository.save(training);
@@ -47,15 +46,14 @@ public class TrainingService {
             ExerciseDTO dto,
             UUID trainingId
     ) {
-        List<Exercise> exercises = new ArrayList<>();
+        Training training = trainingRepository.findById(trainingId)
+                .orElseThrow(() -> new EntityExistsException("Training not found"));
 
         Exercise exercise = new Exercise();
         exercise.setId(UUID.randomUUID());
-        exercise.setTraining_id(trainingId);
         exercise.setName_exercise(dto.name_exercise());
         exercise.setNotes(dto.notes());
 
-        exercises.add(exercise);
         return exerciseRepository.save(exercise);
     }
 
@@ -68,7 +66,6 @@ public class TrainingService {
 
         training.setData(dto.data());
         training.setUserId(dto.userId());
-        training.setStatus(dto.status());
 
         return trainingRepository.save(training);
     }

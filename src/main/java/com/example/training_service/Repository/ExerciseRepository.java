@@ -1,6 +1,7 @@
-package Repository;
+package com.example.training_service.Repository;
 
-import model.Exercise;
+
+import com.example.training_service.model.Exercise;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;

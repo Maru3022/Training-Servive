@@ -1,4 +1,4 @@
-package model;
+package com.example.training_service.model;
 
 public enum TrainingStatus {
     PLANNED,
