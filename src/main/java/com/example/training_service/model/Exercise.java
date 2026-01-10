@@ -21,11 +21,13 @@ public class Exercise {
     private String notes;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "training_id", nullable = false)
+    @JoinColumn(name = "training_id",
+            nullable = false)
     @ToString.Exclude
     private Training training;
 
-    @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(mappedBy = "exercise",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private List<ExerciseSet> sets = new ArrayList<>();
-
 }

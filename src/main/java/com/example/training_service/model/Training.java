@@ -25,7 +25,8 @@ public class Training {
     private TrainingStatus status;
     private String training_name;
 
-    @OneToMany(mappedBy = "training", cascade  =  CascadeType.ALL)
+    @OneToMany(mappedBy = "training",
+            cascade = CascadeType.ALL)
     @ToString.Exclude
     private List<Exercise> exercises = new ArrayList<>();
 }

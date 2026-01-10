@@ -13,13 +13,14 @@ public class ExerciseSet {
     @Id
     private UUID id;
 
-    private int weight;
     private int reps;
+    private int weight;
 
     @Column(name = "set_order")
     private int order;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "exercise_id", nullable = false)
-    private Exercise exercise; // Это поле "главное", оно само создаст колонку exercise_id
+    @JoinColumn(name = "exercise_id",
+            nullable = false)
+    private Exercise exercise;
 }
