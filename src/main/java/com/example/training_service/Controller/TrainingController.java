@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-//ToDo: Exercise @GetMapping, @DeleteMapping, @PutMapping
-
 @RestController
 @RequestMapping("/trainings")
 public class TrainingController {
@@ -84,7 +82,24 @@ public class TrainingController {
             log.error("Error deleting exercise for training_id: {}. Reason: {}", id, e.getMessage());
             throw e;
         }
+    }
 
+    @DeleteMapping("/{id}/exercise")
+    public ResponseEntity<Void> deleteExercise(
+        @PathVariable UUID id,
+        ExerciseDTO dto
+    ){
+        log.info("Deleting exercise for training_id: {}", id);
+        try{
+            trainingService.deleteExercise(id);
+            log.info("Successfully deleted exercise for training_id: {}", id);
+            return ResponseEntity
+                    .noContent()
+                    .build();
+        }catch (Exception e){
+            log.error("Error deleting exercise for training_id: {}. Reason: {}", id, e.getMessage());
+            throw e;
+        }
     }
 
     @GetMapping("/{id}")
@@ -103,7 +118,25 @@ public class TrainingController {
             log.error("Error getting training for id: {}. Reason: {}", id, e.getMessage());
             throw e;
         }
+    }
 
+    @GetMapping("/{id}/delete")
+    public ResponseEntity<Void> getExercise(
+        @PathVariable UUID id,
+        ExerciseDTO dto
+    ){
+        log.info("Getting exercise for id: {}" ,id);
+        try{
+            trainingService.getExercise(id, dto);
+            log.info("Get exercise for id: {}" ,id);
+
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .build();
+        }catch (Exception e){
+            log.error("Error getting exercise for id: {}. Reason: {}", id, e.getMessage());
+            throw e;
+        }
     }
 
     @PutMapping("/{id}")
@@ -121,6 +154,25 @@ public class TrainingController {
                     .body(trainingService.getTraining(id));
         } catch (Exception e) {
             log.error("Error updating training with id: {}. Reason: {}", id, e.getMessage());
+            throw e;
+        }
+    }
+
+    @PutMapping("/{id}/exercise")
+    public ResponseEntity<Exercise>  updateExercise(
+            @PathVariable UUID id,
+            @Valid @RequestBody ExerciseDTO dto
+            ){
+        log.info("Request to update with id: {}. New Data: {}" , id, dto);
+        try{
+            trainingService.updateExercise(id, dto);
+            log.info("Successfully updated exercise with id: {} ", id);
+
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(trainingService.getExercise(id, dto));
+        }catch (Exception e){
+            log.error("Error updating exercise with id: {}. Reason: {}", id, e.getMessage());
             throw e;
         }
     }
