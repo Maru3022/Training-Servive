@@ -1,19 +1,19 @@
 package com.example.training_service.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "exercise_sets")
 public class ExerciseSet {
 
     @Id
     private UUID id;
-
-    private UUID exercise_id;
 
     private int reps;
     private int weight;

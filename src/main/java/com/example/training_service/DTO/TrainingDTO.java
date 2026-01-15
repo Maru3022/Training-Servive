@@ -2,6 +2,7 @@ package com.example.training_service.DTO;
 
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public record TrainingDTO(
@@ -9,5 +10,6 @@ public record TrainingDTO(
         @NotNull LocalDate data,
         @NotNull UUID userId,
         @NotNull String training_name,
-        @NotNull String status
+        @NotNull String status,
+        List<ExerciseDTO> exercises
 ) {}

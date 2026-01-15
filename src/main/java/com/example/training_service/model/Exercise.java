@@ -1,14 +1,16 @@
 package com.example.training_service.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "exercises")
 public class Exercise {
@@ -30,4 +32,9 @@ public class Exercise {
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     private List<ExerciseSet> sets = new ArrayList<>();
+
+    public void addSet(ExerciseSet set) {
+        this.sets.add(set);
+        set.setExercise(this);
+    }
 }
