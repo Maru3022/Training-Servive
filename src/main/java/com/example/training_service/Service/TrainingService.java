@@ -117,7 +117,17 @@ public class TrainingService {
         training.setData(training_dto.data());
         training.setUserId(training_dto.userId());
         training.setTraining_name(training_dto.training_name());
-        training.setStatus(TrainingStatus.valueOf(training_dto.status()));
+
+        if (training_dto.status() != null) {
+            try {
+                training.setStatus(TrainingStatus.valueOf(training_dto.status().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                log.warn("Unknown status '{}', defaulting to PLANNED", training_dto.status());
+                training.setStatus(TrainingStatus.PLANNED);
+            }
+        } else {
+            training.setStatus(TrainingStatus.PLANNED);
+        }
 
         if (training_dto.exercises() != null && !training_dto.exercises().isEmpty()) {
             List<Exercise> exercises = training_dto.exercises().stream().map(
@@ -127,7 +137,6 @@ public class TrainingService {
                         exercise.setId(UUID.randomUUID());
                         exercise.setName_exercise(exDTO.name_exercise());
                         exercise.setNotes(exDTO.notes());
-
                         exercise.setTraining(training);
 
                         if (exDTO.sets() != null && !exDTO.sets().isEmpty()) {
@@ -139,8 +148,8 @@ public class TrainingService {
                                         set.setWeight(setDTO.weight());
                                         set.setReps(setDTO.reps());
                                         set.setOrder(setDTO.order());
-
                                         set.setExercise(exercise);
+
                                         return set;
                                     }).toList();
 
