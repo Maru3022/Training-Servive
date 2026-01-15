@@ -1,9 +1,11 @@
 package com.example.training_service.Controller;
 
 import com.example.training_service.DTO.ExerciseDTO;
+import com.example.training_service.DTO.SetDTO;
 import com.example.training_service.DTO.TrainingDTO;
 import com.example.training_service.Service.TrainingService;
 import com.example.training_service.model.Exercise;
+import com.example.training_service.model.ExerciseSet;
 import com.example.training_service.model.Training;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -86,17 +88,17 @@ public class TrainingController {
 
     @DeleteMapping("/{id}/exercise")
     public ResponseEntity<Void> deleteExercise(
-        @PathVariable UUID id,
-        ExerciseDTO dto
-    ){
+            @PathVariable UUID id,
+            ExerciseDTO dto
+    ) {
         log.info("Deleting exercise for training_id: {}", id);
-        try{
+        try {
             trainingService.deleteExercise(id);
             log.info("Successfully deleted exercise for training_id: {}", id);
             return ResponseEntity
                     .noContent()
                     .build();
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("Error deleting exercise for training_id: {}. Reason: {}", id, e.getMessage());
             throw e;
         }
@@ -122,18 +124,18 @@ public class TrainingController {
 
     @GetMapping("/{id}/delete")
     public ResponseEntity<Void> getExercise(
-        @PathVariable UUID id,
-        ExerciseDTO dto
-    ){
-        log.info("Getting exercise for id: {}" ,id);
-        try{
+            @PathVariable UUID id,
+            ExerciseDTO dto
+    ) {
+        log.info("Getting exercise for id: {}", id);
+        try {
             trainingService.getExercise(id, dto);
-            log.info("Get exercise for id: {}" ,id);
+            log.info("Get exercise for id: {}", id);
 
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .build();
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("Error getting exercise for id: {}. Reason: {}", id, e.getMessage());
             throw e;
         }
@@ -159,20 +161,93 @@ public class TrainingController {
     }
 
     @PutMapping("/{id}/exercise")
-    public ResponseEntity<Exercise>  updateExercise(
+    public ResponseEntity<Exercise> updateExercise(
             @PathVariable UUID id,
             @Valid @RequestBody ExerciseDTO dto
-            ){
-        log.info("Request to update with id: {}. New Data: {}" , id, dto);
-        try{
+    ) {
+        log.info("Request to update with id: {}. New Data: {}", id, dto);
+        try {
             trainingService.updateExercise(id, dto);
             log.info("Successfully updated exercise with id: {} ", id);
 
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(trainingService.getExercise(id, dto));
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("Error updating exercise with id: {}. Reason: {}", id, e.getMessage());
+            throw e;
+        }
+    }
+
+    @GetMapping("/{id}/exercise/set")
+    public ResponseEntity<ExerciseSet> getExerciseSet(
+            @PathVariable UUID id,
+            @Valid @RequestBody SetDTO set_dto
+    ) {
+        log.info("Getting exercise set for id: {}", id, set_dto);
+        try {
+            getExerciseSet(id, set_dto);
+            log.info("Successfull get exercise set for id: {} ", id);
+
+            return ResponseEntity
+                    .status(HttpStatus.GONE)
+                    .body(trainingService.getExerciseSet(id));
+        } catch (Exception e) {
+            log.error("Error getting exercise set for id: {}. Reason: {}", id, e.getMessage());
+            throw e;
+        }
+    }
+
+    @PostMapping("/{id}/exercise/set")
+    public ResponseEntity<ExerciseSet> postExerciseSet(
+            @PathVariable UUID id,
+            @Valid @RequestBody SetDTO set_dto
+    ) {
+        ExerciseSet exerciseSet = new ExerciseSet();
+
+        exerciseSet.setId(id);
+        exerciseSet.setExercise_id(set_dto.exercise_id());
+        exerciseSet.setWeight(set_dto.weight());
+        exerciseSet.setReps(set_dto.reps());
+        exerciseSet.setOrder(set_dto.order());
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(exerciseSet);
+    }
+
+    @PutMapping("/{id}/exercise/set")
+    public ResponseEntity<ExerciseSet> updateExerciseSet(
+            @PathVariable UUID id,
+            @Valid @RequestBody SetDTO set_dto
+    ) {
+        log.info("Request to update for id: {}. New Data: {} ", id, set_dto);
+        try {
+            trainingService.updateExerciseSet(id, set_dto);
+            log.info("Successfully updated exercise set for id: {} ", id);
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(trainingService.getExerciseSet(id));
+        } catch (Exception e) {
+            log.error("Error updating exercise set for id: {}. Reason: {}", id, e.getMessage());
+            throw e;
+        }
+    }
+
+    @DeleteMapping("/{id}/exercise/set")
+    public ResponseEntity<ExerciseSet> deleteExerciseSet(
+            @PathVariable UUID id,
+            @Valid @RequestBody SetDTO set_dto
+    ) {
+        log.info("Request to delete for id: {} ", id);
+        try {
+            trainingService.deleteExerciseSet(id, set_dto);
+            log.info("Successfully deleted exercise set for id: {} ", id);
+            return ResponseEntity
+                    .noContent()
+                    .build();
+        } catch (Exception e) {
+            log.error("Error deleting exercise set for id: {}. Reason: {}", id, e.getMessage());
             throw e;
         }
     }

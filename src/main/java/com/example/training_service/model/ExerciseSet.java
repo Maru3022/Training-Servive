@@ -13,6 +13,8 @@ public class ExerciseSet {
     @Id
     private UUID id;
 
+    private UUID exercise_id;
+
     private int reps;
     private int weight;
 
