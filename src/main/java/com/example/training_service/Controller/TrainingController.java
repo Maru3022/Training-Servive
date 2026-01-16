@@ -8,6 +8,7 @@ import com.example.training_service.model.ExerciseSet;
 import com.example.training_service.model.Training;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class TrainingController {
 
     private final TrainingService trainingService;
     private final TrainingBulkLoader bulkLoader;
-    private final Logger log = org.slf4j.LoggerFactory.getLogger(this.getClass());
+    private final Logger log = LoggerFactory.getLogger(TrainingController.class);
 
     public TrainingController(
             TrainingService trainingService,
@@ -31,9 +32,11 @@ public class TrainingController {
     }
 
     @PostMapping("/bulk-load")
-    public ResponseEntity<String> startBulkLoad() {
-        // Запускаем в новом потоке, чтобы не ждать окончания 1 млн записей в HTTP ответе
-        new Thread(bulkLoader::runBulkLoad).start();
+    public ResponseEntity<String> startBulkLoad(
+            @RequestParam(defaultValue = "1000000") int count,
+            @RequestParam(defaultValue = "5000") int batchSize
+    ) {
+        new Thread(() -> bulkLoader.runBulkLoad(count, batchSize)).start();
         return ResponseEntity.ok("Bulk loading started in background...");
     }
 
@@ -42,78 +45,60 @@ public class TrainingController {
             @Valid @RequestBody TrainingDTO dto
     ) {
         log.info("REST request to create training: {}", dto.training_name());
-
         Training created = trainingService.createdTraining(dto);
-        log.info("Created training for: {}", created);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(created);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTrainings(
-            TrainingDTO dto,
-            @PathVariable UUID id
-    ) {
-        log.info("Deleting exercise for training_id: {}", id);
-        try {
-            trainingService.deleteTraining(id);
-            log.info("Successfully deleted exercise for training_id: {}", id);
-
-            return ResponseEntity
-                    .noContent()
-                    .build();
-        } catch (Exception e) {
-            log.error("Error deleting exercise for training_id: {}. Reason: {}", id, e.getMessage());
-            throw e;
-        }
-    }
-
     @GetMapping("/{id}")
-    public ResponseEntity<Training> getTrainings(
+    public ResponseEntity<Training> getTraining(
             @PathVariable UUID id
     ) {
-        log.info("Getting training for id: {}", id);
-        trainingService.getTraining(id);
-        log.info("Get training for id: {}", id);
+        log.info("REST request to get training with id: {}", id);
+        Training training = trainingService.getTraining(id);
 
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(trainingService.getTraining(id));
+        return ResponseEntity.ok(training);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Training> updateTrainings(
-            @Valid @RequestBody TrainingDTO dto,
+    public ResponseEntity<Training> updateTraining(
+            @PathVariable UUID id,
+            @Valid @RequestBody TrainingDTO dto
+    ) {
+        log.info("REST request to update training with id: {}", id);
+        Training updated = trainingService.updateFullTraining(id, dto);
+
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTraining(
             @PathVariable UUID id
     ) {
-        log.info("Request to update training with id: {}. New Data: {} ", id, dto);
+        log.info("REST request to delete training with id: {}", id);
+        trainingService.deleteTraining(id);
 
-        Training updated = trainingService.updateFullTraining(id, dto);
-        log.info("Successfully updated training with id: {} ", id);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(trainingService.getTraining(id));
-
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/sets/{setId}")
     public ResponseEntity<ExerciseSet> patchSet(
             @PathVariable UUID setId,
-            @Valid @RequestBody SetDTO set_dto
+            @Valid @RequestBody SetDTO dto
     ) {
-        log.info("REST request to patch trainings for id: {}", setId);
-        ExerciseSet updateSet = trainingService.patchSetPerformance(setId, set_dto);
+        log.info("REST request to patch set with id: {}", setId);
+        ExerciseSet updatedSet = trainingService.patchSetPerformance(setId, dto);
 
-        return ResponseEntity.ok(updateSet);
+        return ResponseEntity.ok(updatedSet);
     }
 
     @DeleteMapping("/exercises/{exerciseId}")
-    public ResponseEntity<Void> deleteExercises(
+    public ResponseEntity<Void> deleteExercise(
             @PathVariable UUID exerciseId
     ) {
-        log.info("REST request to delete exercises for id: {}", exerciseId);
+        log.info("REST request to delete exercise with id: {}", exerciseId);
         trainingService.deleteSpecificTraining(exerciseId);
 
         return ResponseEntity.noContent().build();

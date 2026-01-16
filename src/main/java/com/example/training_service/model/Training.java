@@ -37,4 +37,6 @@ public class Training {
         this.exercises.add(exercise);
         exercise.setTraining(this);
     }
+
+
 }

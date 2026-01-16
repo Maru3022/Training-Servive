@@ -15,6 +15,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
@@ -120,7 +121,7 @@ public class TrainingService {
 
         if (training_dto.status() != null) {
             try {
-                training.setStatus(TrainingStatus.valueOf(training_dto.status().toUpperCase()));
+                training.setStatus(TrainingStatus.valueOf(training_dto.status()));
             } catch (IllegalArgumentException e) {
                 log.warn("Unknown status '{}', defaulting to PLANNED", training_dto.status());
                 training.setStatus(TrainingStatus.PLANNED);
@@ -155,9 +156,9 @@ public class TrainingService {
 
                             exercise.setSets(sets);
                         }
+
                         return exercise;
                     }).toList();
-
             training.setExercises(exercises);
         }
     }

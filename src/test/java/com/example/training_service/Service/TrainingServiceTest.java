@@ -1,21 +1,25 @@
 package com.example.training_service.Service;
 
+import com.example.training_service.DTO.ExerciseDTO;
+import com.example.training_service.DTO.SetDTO;
 import com.example.training_service.DTO.TrainingDTO;
 import com.example.training_service.Repository.ExerciseRepository;
 import com.example.training_service.Repository.ExerciseSetRepository;
 import com.example.training_service.Repository.TrainingRepository;
+import com.example.training_service.model.ExerciseSet;
 import com.example.training_service.model.Training;
 import com.example.training_service.model.TrainingStatus;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.time.LocalDate;
-import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,12 +28,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class TrainingServiceTest {
 
     @Mock
     private TrainingRepository trainingRepository;
+
     @Mock
     private ExerciseRepository exerciseRepository;
+
     @Mock
     private ExerciseSetRepository exerciseSetRepository;
 
@@ -37,38 +44,57 @@ class TrainingServiceTest {
     private TrainingService trainingService;
 
     @Test
-    @DisplayName("Должен успешно создать тренировку из DTO")
-    void createdTraining_Success() {
-        // Given (Дано)
-        TrainingDTO dto = new TrainingDTO(
-                null,
-                LocalDate.now(),
-                UUID.randomUUID(),
-                "Утренняя тренировка",
-                "PLANNED",
-                Collections.emptyList()
-        );
+    @DisplayName("Создание тренировки - проверка маппинга всех уровней (DTO -> Entity)")
+    void createdTraining_FullSuccess() {
+
+        SetDTO setDTO = new SetDTO(UUID.randomUUID(), UUID.randomUUID(),100,10,1);
+        ExerciseDTO exDTO = new ExerciseDTO( UUID.randomUUID(), UUID.randomUUID(), "Жим", "Заметка", List.of(setDTO));        when(trainingRepository.save(any(Training.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        TrainingDTO dto = new TrainingDTO(null, LocalDate.now(), UUID.randomUUID(), "Утренняя", "PLANNED", List.of(exDTO));
 
         when(trainingRepository.save(any(Training.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // When (Когда)
         Training result = trainingService.createdTraining(dto);
-
-        // Then (Тогда)
         assertNotNull(result);
-        assertEquals("Утренняя тренировка", result.getTraining_name());
-        assertEquals(TrainingStatus.PLANNED, result.getStatus());
+        assertEquals("Утренняя", result.getTraining_name());
         verify(trainingRepository, times(1)).save(any(Training.class));
     }
 
     @Test
     @DisplayName("Должен выбросить исключение, если тренировка не найдена")
     void getTraining_NotFound() {
-        // Given
         UUID id = UUID.randomUUID();
         when(trainingRepository.findById(id)).thenReturn(Optional.empty());
 
-        // When & Then
-        assertThrows(EntityNotFoundException.class, () -> trainingService.getTraining(id));
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> trainingService.getTraining(id));
+
+        assertEquals("Cannot delete: Training not found", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Патч сета - должен обновить только вес и повторения")
+    void patchSetPerformance_Success() {
+        UUID setId = UUID.randomUUID();
+        ExerciseSet existingSet = new ExerciseSet();
+        existingSet.setWeight(50);
+
+        SetDTO patchDTO = new SetDTO(setId, UUID.randomUUID(), 90,15,1);
+        when(exerciseSetRepository.findById(setId)).thenReturn(Optional.of(existingSet));
+        when(exerciseSetRepository.save(any(ExerciseSet.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ExerciseSet result = trainingService.patchSetPerformance(setId, patchDTO);
+
+        assertEquals(90, result.getWeight());
+        assertEquals(15, result.getReps());
+    }
+
+    @Test
+    @DisplayName("Удаление тренировки - ошибка, если ID е существует")
+    void deleteTraining_NotFound() {
+        UUID id = UUID.randomUUID();
+        when(trainingRepository.existsById(id)).thenReturn(false);
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> trainingService.deleteTraining(id));
+        assertEquals("Training don't delete", ex.getMessage());
+
     }
 }

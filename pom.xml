@@ -38,6 +38,11 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-subinline</artifactId>
+            <version>0.1.0</version> <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
