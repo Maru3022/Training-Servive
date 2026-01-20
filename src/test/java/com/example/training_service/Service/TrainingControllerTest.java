@@ -64,13 +64,13 @@ class TrainingControllerTest {
     @Test
     void triggerBulkLoad_ShouldReturnOk() throws Exception {
         mockMvc.perform(
-                        post("/trainings/bulk-load")
-                                .param("count", "100")
-                                .param("batchSize", "10")
-                )
+                post("/trainings/bulk-load")
+                        .param("count", "100")
+                        .param("batchSize", "10")
+        )
                 .andExpect(status().isOk());
 
-        verify(trainingBulkLoader, timeout(100)).runBulkLoad(100, 10);
+        verify(trainingBulkLoader, timeout(100)).runBulkLoad(100,10);
     }
 
     @Test
@@ -78,13 +78,13 @@ class TrainingControllerTest {
 
         Training savedTraining = new Training();
         savedTraining.setId(trainingId);
-        savedTraining.setUserId(trainingId);
+        savedTraining.setUserId(userId);
         savedTraining.setTraining_name("Leg Day");
         savedTraining.setStatus(TrainingStatus.PLANNED);
 
         when(trainingService.createdTraining(any(TrainingDTO.class))).thenReturn(savedTraining);
-
-        mockMvc.perform(post("/trainings")
+        mockMvc.perform(
+                post("/trainings")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(defaultDto)))
                 .andExpect(status().isCreated())
@@ -95,10 +95,10 @@ class TrainingControllerTest {
     @Test
     void postTrainings_ShouldReturnBadRequest_WhenInvalidJson() throws Exception {
         mockMvc.perform(
-                        post("/trainings")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("{ \"invalid\": \"json\" }")
-                )
+                post("/trainings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"invalid\": \"json\"}")
+        )
                 .andExpect(status().isBadRequest());
     }
 
@@ -111,16 +111,19 @@ class TrainingControllerTest {
 
         when(trainingService.getTraining(trainingId)).thenReturn(training);
 
-        mockMvc.perform(get("/trainings/{id}", trainingId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(trainingId.toString()))
+        mockMvc.perform(
+                get("/trainings/{id}", trainingId))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.id").value(trainingId.toString()))
                 .andExpect(jsonPath("$.training_name").value("Morning Run"));
+
     }
 
     @Test
-    void updateTrainings_ShouldReturnOk() throws Exception {
+    void updateTraining_ShouldReturnOk() throws Exception {
         UUID trainingId = UUID.randomUUID();
-        TrainingDTO dto = new TrainingDTO(trainingId, LocalDate.now(), UUID.randomUUID(), "Update Name", "PLANNED", List.of());
+        TrainingDTO training = new TrainingDTO(trainingId,LocalDate.now(),
+                UUID.randomUUID(),"Update Name", "PLANNED", List.of());
 
         Training updatedTraining = new Training();
         updatedTraining.setId(trainingId);
@@ -129,21 +132,22 @@ class TrainingControllerTest {
         when(trainingService.updateFullTraining(eq(trainingId), any(TrainingDTO.class))).thenReturn(updatedTraining);
         when(trainingService.getTraining(trainingId)).thenReturn(updatedTraining);
 
-        mockMvc.perform(put("/trainings/{id}", trainingId)
+        mockMvc.perform(
+                put("/trainings/{id}", trainingId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk())
+                        .content(objectMapper.writeValueAsString(training))
+        ).andExpect(status().isOk())
                 .andExpect(jsonPath("$.training_name").value("Update Name"));
     }
 
     @Test
     void deleteTrainings_ShouldReturnNoContent() throws Exception {
         UUID trainingId = UUID.randomUUID();
-
         doNothing().when(trainingService).deleteTraining(trainingId);
 
-        mockMvc.perform(delete("/trainings/{id}", trainingId))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(
+                delete("/trainings/{id}", trainingId)
+        ).andExpect(status().isNoContent());
 
         verify(trainingService).deleteTraining(trainingId);
     }
@@ -152,7 +156,7 @@ class TrainingControllerTest {
     void patchSet_ShouldReturnOk() throws Exception {
         UUID setId = UUID.randomUUID();
         UUID exerciseId = UUID.randomUUID();
-        SetDTO setDTO = new SetDTO(setId, exerciseId, 50, 12, 1);
+        SetDTO setDTO = new SetDTO(setId, exerciseId, 50,12,1);
 
         ExerciseSet patchedSet = new ExerciseSet();
         patchedSet.setId(setId);
@@ -161,10 +165,11 @@ class TrainingControllerTest {
         when(trainingService.patchSetPerformance(eq(setId), any(SetDTO.class)))
                 .thenReturn(patchedSet);
 
-        mockMvc.perform(patch("/trainings/sets/{setId}", setId)
+        mockMvc.perform(
+                patch("/trainings/sets/{setId}", setId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(setDTO)))
-                .andExpect(status().isOk())
+                        .content(objectMapper.writeValueAsString(setDTO))
+        ).andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(setId.toString()))
                 .andExpect(jsonPath("$.weight").value(50));
     }
@@ -172,11 +177,11 @@ class TrainingControllerTest {
     @Test
     void deleteExercise_ShouldReturnNoContent() throws Exception {
         UUID exerciseId = UUID.randomUUID();
-
         doNothing().when(trainingService).deleteSpecificTraining(exerciseId);
 
-        mockMvc.perform(delete("/trainings/exercises/{exerciseId}", exerciseId))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(
+                delete("/trainings/exercises/{exerciseId}", exerciseId)
+        ).andExpect(status().isNoContent());
 
         verify(trainingService).deleteSpecificTraining(exerciseId);
     }

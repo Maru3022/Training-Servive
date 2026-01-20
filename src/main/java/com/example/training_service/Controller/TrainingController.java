@@ -41,15 +41,13 @@ public class TrainingController {
     }
 
     @PostMapping
-    public ResponseEntity<Training> postTrainings(
-            @Valid @RequestBody TrainingDTO dto
-    ) {
-        log.info("REST request to create training: {}", dto.training_name());
-        Training created = trainingService.createdTraining(dto);
+    public ResponseEntity<UUID> postTrainings(@Valid @RequestBody TrainingDTO dto) {
+        log.info("REST request to create training asynchronously: {}", dto.training_name());
+        UUID requestId = trainingService.createdTrainingAsync(dto);
 
         return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(created);
+                .status(HttpStatus.ACCEPTED)
+                .body(requestId);
     }
 
     @GetMapping("/{id}")

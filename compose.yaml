@@ -1,19 +1,40 @@
+version: '3.8'
 services:
   postgres:
-    image: 'postgres:latest'
+    image: postgres:latest
+    container_name: training_service-postgres-1
+    command: postgres -c shared_buffers=512MB -c max_connections=500 -c checkpoint_completion_target=0.9
     environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_USER=myuser'
-      - 'POSTGRES_PASSWORD=secret'
+      - POSTGRES_DB=mydatabase
+      - POSTGRES_USER=myuser
+      - POSTGRES_PASSWORD=secret
     ports:
-      - '64280:5432' # Теперь порт жестко привязан к хосту
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U myuser -d mydatabase"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      - "44322:5432" # ПОРТ ИЗМЕНЕН НА 44322
 
   redis:
-    image: 'redis:latest'
+    image: redis:alpine
+    container_name: training_service-redis
     ports:
-      - '6379:6379'
+      - "6379:6379"
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: training_service-zookeeper-1
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: training_service-kafka-1
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: training_service-zookeeper-1:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1

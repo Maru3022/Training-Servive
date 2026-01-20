@@ -9,7 +9,9 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Table(name = "exercise_sets")
+@Table(name = "exercise_sets", indexes = {
+        @Index(name = "idx_set_exercise_id", columnList = "exercise_id")
+})
 public class ExerciseSet {
 
     @Id

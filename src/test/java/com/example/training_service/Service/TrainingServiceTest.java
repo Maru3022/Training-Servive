@@ -8,7 +8,6 @@ import com.example.training_service.Repository.ExerciseSetRepository;
 import com.example.training_service.Repository.TrainingRepository;
 import com.example.training_service.model.ExerciseSet;
 import com.example.training_service.model.Training;
-import com.example.training_service.model.TrainingStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,14 +43,14 @@ class TrainingServiceTest {
     private TrainingService trainingService;
 
     @Test
-    @DisplayName("Создание тренировки - проверка маппинга всех уровней (DTO -> Entity)")
-    void createdTraining_FullSuccess() {
-
-        SetDTO setDTO = new SetDTO(UUID.randomUUID(), UUID.randomUUID(),100,10,1);
-        ExerciseDTO exDTO = new ExerciseDTO( UUID.randomUUID(), UUID.randomUUID(), "Жим", "Заметка", List.of(setDTO));        when(trainingRepository.save(any(Training.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    @DisplayName("Создание тренировки - проверка маппинга для всех уровней (DTO -> Entity)")
+    void createdTraining_FullSuccess(){
+        SetDTO setDTO = new SetDTO(UUID.randomUUID(),UUID.randomUUID(),100,10,1);
+        ExerciseDTO exDTO = new ExerciseDTO(UUID.randomUUID(),UUID.randomUUID(),"Жим","Заметка", List.of(setDTO));
         TrainingDTO dto = new TrainingDTO(null, LocalDate.now(), UUID.randomUUID(), "Утренняя", "PLANNED", List.of(exDTO));
 
-        when(trainingRepository.save(any(Training.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(trainingRepository.save(any(Training.class)))
+                .thenAnswer(i -> i.getArgument(0));
 
         Training result = trainingService.createdTraining(dto);
         assertNotNull(result);
@@ -61,40 +60,43 @@ class TrainingServiceTest {
 
     @Test
     @DisplayName("Должен выбросить исключение, если тренировка не найдена")
-    void getTraining_NotFound() {
+    void getTraining_NotFound(){
         UUID id = UUID.randomUUID();
-        when(trainingRepository.findById(id)).thenReturn(Optional.empty());
+        when(trainingRepository.findById(id))
+                .thenReturn(Optional.empty());
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> trainingService.getTraining(id));
-
         assertEquals("Cannot delete: Training not found", ex.getMessage());
     }
 
     @Test
     @DisplayName("Патч сета - должен обновить только вес и повторения")
-    void patchSetPerformance_Success() {
+    void patchSetPerformance_Success(){
         UUID setId = UUID.randomUUID();
+
         ExerciseSet existingSet = new ExerciseSet();
         existingSet.setWeight(50);
 
-        SetDTO patchDTO = new SetDTO(setId, UUID.randomUUID(), 90,15,1);
-        when(exerciseSetRepository.findById(setId)).thenReturn(Optional.of(existingSet));
-        when(exerciseSetRepository.save(any(ExerciseSet.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        SetDTO patchDTO = new SetDTO(setId,UUID.randomUUID(), 90, 15,1);
+        when(exerciseSetRepository.findById(setId))
+                .thenReturn(Optional.of(existingSet));
 
-        ExerciseSet result = trainingService.patchSetPerformance(setId, patchDTO);
+        when(exerciseSetRepository.save(any(ExerciseSet.class)))
+                .thenAnswer(i -> i.getArgument(0));
 
+        ExerciseSet result = trainingService.patchSetPerformance(setId,patchDTO);
         assertEquals(90, result.getWeight());
         assertEquals(15, result.getReps());
     }
 
     @Test
-    @DisplayName("Удаление тренировки - ошибка, если ID е существует")
+    @DisplayName("Удаление тренировки - ошибка, если ID не существует")
     void deleteTraining_NotFound() {
         UUID id = UUID.randomUUID();
-        when(trainingRepository.existsById(id)).thenReturn(false);
+        when(trainingRepository.existsById(id))
+                .thenReturn(false);
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> trainingService.deleteTraining(id));
         assertEquals("Training don't delete", ex.getMessage());
-
     }
 }

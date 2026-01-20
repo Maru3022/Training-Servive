@@ -12,7 +12,9 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Table(name = "exercises")
+@Table(name = "exercises", indexes ={
+        @Index(name = "idx_traning_user", columnList = "training_id")
+})
 public class Exercise {
 
     @Id

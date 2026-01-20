@@ -13,7 +13,12 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Table(name = "training")
+@Table(name = "training"
+ ,indexes = {
+        @Index(name = "idx_training_user_id", columnList = "user_id"),
+        @Index(name = "idx_training_data", columnList = "data")
+})
+
 public class Training {
 
     @Id

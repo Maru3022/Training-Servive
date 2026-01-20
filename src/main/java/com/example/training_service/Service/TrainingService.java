@@ -13,33 +13,77 @@ import com.example.training_service.model.TrainingStatus;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @Transactional
+@CacheConfig(cacheNames = "trainings")
 public class TrainingService {
 
     private final TrainingRepository trainingRepository;
     private final ExerciseSetRepository exerciseSetRepository;
     private final ExerciseRepository exerciseRepository;
+    private final KafkaProducerService kafkaProducerService;
 
     private final Logger log = org.slf4j.LoggerFactory.getLogger(this.getClass());
 
     public TrainingService(
             TrainingRepository trainingRepository,
             ExerciseRepository exerciseRepository,
-            ExerciseSetRepository exerciseSetRepository
+            ExerciseSetRepository exerciseSetRepository,
+            KafkaProducerService kafkaProducerService
     ) {
         this.trainingRepository = trainingRepository;
         this.exerciseRepository = exerciseRepository;
         this.exerciseSetRepository = exerciseSetRepository;
+        this.kafkaProducerService = kafkaProducerService;
     }
 
+    public UUID createdTrainingAsync(TrainingDTO dto) {
+        UUID id = UUID.randomUUID();
+
+        TrainingDTO eventsDto = new TrainingDTO(
+                id,
+                dto.data(),
+                dto.userId(),
+                dto.training_name(),
+                dto.status(),
+                dto.exercises()
+
+        );
+
+        kafkaProducerService.sendTrainingEvent(eventsDto);
+
+        log.debug("Training request accepted asynchronosly: {}", id);
+        return id;
+    }
+
+    @Transactional
+    public void saveBatch(List<TrainingDTO> dtos) {
+        List<Training> trainings = dtos.stream().map(dto -> {
+            Training training = new Training();
+            // Используем ID, который был сгенерирован при отправке в Kafka
+            training.setId(dto.id());
+            mapDtoToEntity(dto, training);
+            return training;
+        }).toList();
+
+        // Благодаря spring.jpa.properties.hibernate.jdbc.batch_size=500
+        // и ручному назначению UUID, это превратится в эффективный Batch Insert.
+        trainingRepository.saveAll(trainings);
+        log.info("Successfully saved batch of {} trainings", trainings.size());
+    }
+
+    @CachePut(key = "#result.id")
     public Training createdTraining(
             TrainingDTO dto
     ) {
@@ -52,6 +96,7 @@ public class TrainingService {
         return trainingRepository.save(training);
     }
 
+    @CachePut(key = "#id")
     public Training updateFullTraining(
             UUID id,
             TrainingDTO training_dto
@@ -93,6 +138,7 @@ public class TrainingService {
         exerciseRepository.deleteById(exercise_id);
     }
 
+    @CacheEvict(key = "#id")
     public void deleteTraining(
             UUID id
     ) {
@@ -103,8 +149,10 @@ public class TrainingService {
         trainingRepository.deleteById(id);
     }
 
+    @Cacheable(value = "trainings",key = "#id")
     public Training getTraining(
-            UUID id) {
+            UUID id
+    ) {
         log.info("Getting full training profile for id: {}", id);
 
         return trainingRepository.findById(id)
