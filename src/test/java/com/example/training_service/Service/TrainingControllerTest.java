@@ -20,12 +20,12 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TrainingController.class)
 class TrainingControllerTest {
@@ -64,47 +64,40 @@ class TrainingControllerTest {
     @Test
     void triggerBulkLoad_ShouldReturnOk() throws Exception {
         mockMvc.perform(
-                post("/trainings/bulk-load")
-                        .param("count", "100")
-                        .param("batchSize", "10")
-        )
+                        post("/trainings/bulk-load")
+                                .param("count", "100")
+                                .param("batchSize", "10")
+                )
                 .andExpect(status().isOk());
 
-        verify(trainingBulkLoader, timeout(100)).runBulkLoad(100,10);
+        verify(trainingBulkLoader, timeout(100)).runBulkLoad(100, 10);
     }
 
     @Test
-    void postTrainings_ShouldReturnCreated() throws Exception {
+    void postTrainings_ShouldReturnAccepted() throws Exception {
+        // Исправлено: мокаем асинхронный метод и возвращаем UUID
+        when(trainingService.createdTrainingAsync(any(TrainingDTO.class))).thenReturn(trainingId);
 
-        Training savedTraining = new Training();
-        savedTraining.setId(trainingId);
-        savedTraining.setUserId(userId);
-        savedTraining.setTraining_name("Leg Day");
-        savedTraining.setStatus(TrainingStatus.PLANNED);
-
-        when(trainingService.createdTraining(any(TrainingDTO.class))).thenReturn(savedTraining);
         mockMvc.perform(
-                post("/trainings")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(defaultDto)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(trainingId.toString()))
-                .andExpect(jsonPath("$.training_name").value("Leg Day"));
+                        post("/trainings")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(defaultDto)))
+                .andExpect(status().isAccepted()) // Статус 202
+                .andExpect(content().string(containsString(trainingId.toString()))); // Проверка ID в теле
     }
 
     @Test
     void postTrainings_ShouldReturnBadRequest_WhenInvalidJson() throws Exception {
         mockMvc.perform(
-                post("/trainings")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"invalid\": \"json\"}")
-        )
+                        post("/trainings")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"invalid\": \"json\"}")
+                )
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void getTraining_ShouldReturnTraining() throws Exception {
-        UUID trainingId = UUID.randomUUID();
         Training training = new Training();
         training.setId(trainingId);
         training.setTraining_name("Morning Run");
@@ -112,37 +105,33 @@ class TrainingControllerTest {
         when(trainingService.getTraining(trainingId)).thenReturn(training);
 
         mockMvc.perform(
-                get("/trainings/{id}", trainingId))
-                        .andExpect(status().isOk())
-                        .andExpect(jsonPath("$.id").value(trainingId.toString()))
+                        get("/trainings/{id}", trainingId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(trainingId.toString()))
                 .andExpect(jsonPath("$.training_name").value("Morning Run"));
-
     }
 
     @Test
     void updateTraining_ShouldReturnOk() throws Exception {
-        UUID trainingId = UUID.randomUUID();
-        TrainingDTO training = new TrainingDTO(trainingId,LocalDate.now(),
-                UUID.randomUUID(),"Update Name", "PLANNED", List.of());
+        TrainingDTO trainingDto = new TrainingDTO(trainingId, LocalDate.now(),
+                userId, "Update Name", "PLANNED", List.of());
 
         Training updatedTraining = new Training();
         updatedTraining.setId(trainingId);
         updatedTraining.setTraining_name("Update Name");
 
         when(trainingService.updateFullTraining(eq(trainingId), any(TrainingDTO.class))).thenReturn(updatedTraining);
-        when(trainingService.getTraining(trainingId)).thenReturn(updatedTraining);
 
         mockMvc.perform(
-                put("/trainings/{id}", trainingId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(training))
-        ).andExpect(status().isOk())
+                        put("/trainings/{id}", trainingId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(trainingDto))
+                ).andExpect(status().isOk())
                 .andExpect(jsonPath("$.training_name").value("Update Name"));
     }
 
     @Test
     void deleteTrainings_ShouldReturnNoContent() throws Exception {
-        UUID trainingId = UUID.randomUUID();
         doNothing().when(trainingService).deleteTraining(trainingId);
 
         mockMvc.perform(
@@ -156,7 +145,7 @@ class TrainingControllerTest {
     void patchSet_ShouldReturnOk() throws Exception {
         UUID setId = UUID.randomUUID();
         UUID exerciseId = UUID.randomUUID();
-        SetDTO setDTO = new SetDTO(setId, exerciseId, 50,12,1);
+        SetDTO setDTO = new SetDTO(setId, exerciseId, 50, 12, 1);
 
         ExerciseSet patchedSet = new ExerciseSet();
         patchedSet.setId(setId);
@@ -166,10 +155,10 @@ class TrainingControllerTest {
                 .thenReturn(patchedSet);
 
         mockMvc.perform(
-                patch("/trainings/sets/{setId}", setId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(setDTO))
-        ).andExpect(status().isOk())
+                        patch("/trainings/sets/{setId}", setId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(setDTO))
+                ).andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(setId.toString()))
                 .andExpect(jsonPath("$.weight").value(50));
     }
