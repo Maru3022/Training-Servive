@@ -35,26 +35,22 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-      # Используем проверенный образ от Confluent для Kafka
+      zookeeper:
+        image: confluentinc/cp-zookeeper:7.4.0
+        env:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_TICK_TIME: 2000
+
       kafka:
         image: confluentinc/cp-kafka:7.4.0
         ports:
           - 9092:9092
         env:
           KAFKA_BROKER_ID: 1
-          KAFKA_ZOOKEEPER_CONNECT: localhost:2181 # В этом образе ZK встроен для тестов
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
           KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
           KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
           KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-          KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-          # Настройка для запуска без отдельного Zookeeper в упрощенном режиме
-          KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-
-      zookeeper:
-        image: confluentinc/cp-zookeeper:7.4.0
-        env:
-          ZOOKEEPER_CLIENT_PORT: 2181
-          ZOOKEEPER_TICK_TIME: 2000
 
     steps:
       - name: Checkout code
@@ -67,23 +63,15 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      # Даем сервисам (особенно Kafka) время на полную инициализацию
       - name: Wait for services
         run: sleep 30
 
       - name: Build with Maven
         run: mvn clean install
         env:
-          # Принудительно задаем параметры из вашего application.properties
           SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:44322/mydatabase
           SPRING_DATASOURCE_USERNAME: myuser
           SPRING_DATASOURCE_PASSWORD: secret
           SPRING_DATA_REDIS_HOST: localhost
           SPRING_DATA_REDIS_PORT: 6379
-
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: training-service-jar
-          path: target/*.jar
