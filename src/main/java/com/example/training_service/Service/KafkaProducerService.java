@@ -18,13 +18,10 @@ public class KafkaProducerService {
     private static final String TOPIC = "training-events";
 
     public void sendTrainingEvent(TrainingDTO dto) {
-        // Используем userId как ключ, чтобы события одного юзера попадали в одну партицию
         String key = String.valueOf(dto.userId());
 
-        // В Spring Boot 3 send() возвращает CompletableFuture
         CompletableFuture<SendResult<String, TrainingDTO>> future = kafkaTemplate.send(TOPIC, key, dto);
 
-        // Обрабатываем результат асинхронно
         future.whenComplete((result, ex) -> {
             if (ex != null) {
                 log.error("Failed to send message to Kafka: key={}, error={}", key, ex.getMessage());

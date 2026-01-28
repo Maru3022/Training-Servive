@@ -30,7 +30,6 @@ public class KafkaConsumerConfig {
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
 
-        // Включаем пакетный режим на уровне фабрики
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
     }
 
@@ -39,9 +38,7 @@ public class KafkaConsumerConfig {
         ConcurrentKafkaListenerContainerFactory<String, TrainingDTO> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
-        // Включаем поддержку List<TrainingDTO>
         factory.setBatchListener(true);
-        // Настройка ручного подтверждения (ack.acknowledge())
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         return factory;
     }

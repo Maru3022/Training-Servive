@@ -18,10 +18,8 @@ public class KafkaConfig {
 
         factory.setConsumerFactory(consumerFactory);
 
-        // Включаем поддержку List<TrainingDTO> для пакетной обработки
         factory.setBatchListener(true);
 
-        // Устанавливаем ручное подтверждение прочтения ( ack.acknowledge() )
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
         return factory;
