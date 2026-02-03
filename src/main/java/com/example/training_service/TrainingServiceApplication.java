@@ -8,6 +8,7 @@ import org.springframework.cache.annotation.EnableCaching;
 @SpringBootApplication
 public class TrainingServiceApplication {
 
+    //ToDo: проверить чтобы не было проблемы N + 1
     public static void main(String[] args) {
         SpringApplication.run(TrainingServiceApplication.class, args);
 

@@ -1,11 +1,11 @@
-package com.example.training_service.Service;
+package com.example.training_service.service;
 
 
-import com.example.training_service.DTO.SetDTO;
-import com.example.training_service.DTO.TrainingDTO;
-import com.example.training_service.Repository.ExerciseRepository;
-import com.example.training_service.Repository.ExerciseSetRepository;
-import com.example.training_service.Repository.TrainingRepository;
+import com.example.training_service.dto.SetDTO;
+import com.example.training_service.dto.TrainingDTO;
+import com.example.training_service.repository.ExerciseRepository;
+import com.example.training_service.repository.ExerciseSetRepository;
+import com.example.training_service.repository.TrainingRepository;
 import com.example.training_service.model.Exercise;
 import com.example.training_service.model.ExerciseSet;
 import com.example.training_service.model.Training;
@@ -13,7 +13,6 @@ import com.example.training_service.model.TrainingStatus;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;

@@ -1,4 +1,4 @@
-package com.example.training_service.Controller;
+package com.example.training_service.controller;
 
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;

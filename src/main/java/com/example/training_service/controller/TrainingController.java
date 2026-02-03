@@ -1,8 +1,8 @@
-package com.example.training_service.Controller;
+package com.example.training_service.controller;
 
-import com.example.training_service.DTO.SetDTO;
-import com.example.training_service.DTO.TrainingDTO;
-import com.example.training_service.Service.TrainingService;
+import com.example.training_service.dto.SetDTO;
+import com.example.training_service.dto.TrainingDTO;
+import com.example.training_service.service.TrainingService;
 import com.example.training_service.TrainingBulkLoader;
 import com.example.training_service.model.ExerciseSet;
 import com.example.training_service.model.Training;

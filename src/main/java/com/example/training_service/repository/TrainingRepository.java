@@ -1,4 +1,4 @@
-package com.example.training_service.Repository;
+package com.example.training_service.repository;
 
 
 

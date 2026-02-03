@@ -1,4 +1,4 @@
-package com.example.training_service.DTO;
+package com.example.training_service.dto;
 
 import jakarta.validation.constraints.NotNull;
 

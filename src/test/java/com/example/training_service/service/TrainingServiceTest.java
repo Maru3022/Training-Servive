@@ -1,11 +1,11 @@
-package com.example.training_service.Service;
+package com.example.training_service.service;
 
-import com.example.training_service.DTO.ExerciseDTO;
-import com.example.training_service.DTO.SetDTO;
-import com.example.training_service.DTO.TrainingDTO;
-import com.example.training_service.Repository.ExerciseRepository;
-import com.example.training_service.Repository.ExerciseSetRepository;
-import com.example.training_service.Repository.TrainingRepository;
+import com.example.training_service.dto.ExerciseDTO;
+import com.example.training_service.dto.SetDTO;
+import com.example.training_service.dto.TrainingDTO;
+import com.example.training_service.repository.ExerciseRepository;
+import com.example.training_service.repository.ExerciseSetRepository;
+import com.example.training_service.repository.TrainingRepository;
 import com.example.training_service.model.ExerciseSet;
 import com.example.training_service.model.Training;
 import org.junit.jupiter.api.DisplayName;

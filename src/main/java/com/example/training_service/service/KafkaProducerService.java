@@ -1,6 +1,6 @@
-package com.example.training_service.Service;
+package com.example.training_service.service;
 
-import com.example.training_service.DTO.TrainingDTO;
+import com.example.training_service.dto.TrainingDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;

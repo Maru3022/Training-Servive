@@ -1,6 +1,6 @@
-package com.example.training_service.Config;
+package com.example.training_service.config;
 
-import com.example.training_service.DTO.TrainingDTO;
+import com.example.training_service.dto.TrainingDTO;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;

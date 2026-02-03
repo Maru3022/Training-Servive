@@ -1,12 +1,11 @@
-package com.example.training_service.Service;
+package com.example.training_service.service;
 
-import com.example.training_service.Controller.TrainingController;
-import com.example.training_service.DTO.SetDTO;
-import com.example.training_service.DTO.TrainingDTO;
+import com.example.training_service.controller.TrainingController;
+import com.example.training_service.dto.SetDTO;
+import com.example.training_service.dto.TrainingDTO;
 import com.example.training_service.TrainingBulkLoader;
 import com.example.training_service.model.ExerciseSet;
 import com.example.training_service.model.Training;
-import com.example.training_service.model.TrainingStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

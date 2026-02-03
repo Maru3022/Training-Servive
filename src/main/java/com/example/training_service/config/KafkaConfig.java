@@ -1,4 +1,4 @@
-package com.example.training_service.Config;
+package com.example.training_service.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
