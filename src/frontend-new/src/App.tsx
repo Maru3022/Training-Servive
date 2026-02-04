@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import TrainingService from './services/TrainingService';
-import { ITraining } from './types';
+import type { ITraining } from './types';
 import { Dumbbell, Play, Database, AlertCircle } from 'lucide-react';
 
 const App: React.FC = () => {

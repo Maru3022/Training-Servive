@@ -1,5 +1,5 @@
 import { apiClient } from '../api/apiClient';
-import { ITraining } from '../types';
+import type { ITraining } from '../types';
 
 class TrainingService {
     private readonly endpoint = '/trainings';
