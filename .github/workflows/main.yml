@@ -75,3 +75,4 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: secret
           SPRING_DATA_REDIS_HOST: localhost
           SPRING_DATA_REDIS_PORT: 6379
+          MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: prometheus
