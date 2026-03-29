@@ -91,10 +91,13 @@ Workflow: `.github/workflows/main.yml`
 
 Pipeline includes:
 
-- dependency review for PRs
-- Maven verify with service containers (Postgres, Redis, Kafka)
-- security scanning (CodeQL + Trivy SARIF upload)
-- Docker image build and push to GHCR on `main`
+- Build & Test
+- Code Quality
+- Docker Build & Push
+- Deploy to Staging
+- Integration Tests
+- Deploy to Production
+- Notify
 
 Image tags:
 

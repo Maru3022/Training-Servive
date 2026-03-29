@@ -1,4 +1,4 @@
-name: CI-CD
+name: main.yml
 
 on:
   pull_request:
@@ -15,19 +15,8 @@ permissions:
   contents: read
 
 jobs:
-  dependency-review:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Dependency review
-        uses: actions/dependency-review-action@v4
-
   build-and-test:
+    name: Build & Test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -111,33 +100,30 @@ jobs:
             **/target/failsafe-reports/*
           if-no-files-found: ignore
 
-  codeql:
+  code-quality:
+    name: Code Quality
+    needs: [build-and-test]
     runs-on: ubuntu-latest
     permissions:
       actions: read
       contents: read
       security-events: write
+      pull-requests: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Dependency review
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v4
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: java
-      - name: Build
+      - name: Build for CodeQL
         run: ./mvnw -B -ntp clean compile -DskipTests
-      - name: Analyze
+      - name: Analyze CodeQL
         uses: github/codeql-action/analyze@v3
-
-  trivy-source-scan:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Run Trivy filesystem scan
+      - name: Trivy filesystem scan
         uses: aquasecurity/trivy-action@0.24.0
         with:
           scan-type: fs
@@ -152,15 +138,17 @@ jobs:
           sarif_file: trivy-fs.sarif
 
   docker-build-and-push:
+    name: Docker Build & Push
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [build-and-test, trivy-source-scan]
+    needs: [code-quality]
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-      security-events: write
     env:
       IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/training-service
+    outputs:
+      image_ref: ${{ steps.image_ref.outputs.image_ref }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -189,3 +177,58 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      - name: Export image reference
+        id: image_ref
+        shell: bash
+        run: echo "image_ref=${IMAGE_NAME}:latest" >> "$GITHUB_OUTPUT"
+
+  deploy-to-staging:
+    name: Deploy to Staging
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [docker-build-and-push]
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: http://staging.train-service.example.com
+    steps:
+      - name: Deploy staging (placeholder)
+        run: |
+          echo "Deploying ${{ needs.docker-build-and-push.outputs.image_ref }} to staging"
+          echo "Replace this step with real deploy command (ssh/helm/terraform)."
+
+  integration-tests:
+    name: Integration Tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [deploy-to-staging]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run staging smoke tests (placeholder)
+        run: |
+          echo "Running integration checks against staging URL"
+          echo "Replace with k6/newman/curl test suite."
+
+  deploy-to-production:
+    name: Deploy to Production
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [docker-build-and-push]
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: http://train-service.example.com
+    steps:
+      - name: Deploy production (placeholder)
+        run: |
+          echo "Deploying ${{ needs.docker-build-and-push.outputs.image_ref }} to production"
+          echo "Replace this step with real deploy command guarded by environment approvals."
+
+  notify:
+    name: Notify
+    if: always()
+    needs: [integration-tests, deploy-to-production]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish deployment summary
+        run: |
+          echo "CI/CD pipeline completed."
+          echo "Integration tests result: ${{ needs.integration-tests.result }}"
+          echo "Production deploy result: ${{ needs.deploy-to-production.result }}"
