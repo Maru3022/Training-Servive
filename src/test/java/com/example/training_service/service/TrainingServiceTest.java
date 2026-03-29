@@ -3,11 +3,14 @@ package com.example.training_service.service;
 import com.example.training_service.dto.ExerciseDTO;
 import com.example.training_service.dto.SetDTO;
 import com.example.training_service.dto.TrainingDTO;
+import com.example.training_service.repository.OutboxRepository;
 import com.example.training_service.repository.ExerciseRepository;
 import com.example.training_service.repository.ExerciseSetRepository;
 import com.example.training_service.repository.TrainingRepository;
 import com.example.training_service.model.ExerciseSet;
 import com.example.training_service.model.Training;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,6 +42,12 @@ class TrainingServiceTest {
     @Mock
     private ExerciseSetRepository exerciseSetRepository;
 
+    @Mock
+    private OutboxRepository outboxRepository;
+
+    @Mock
+    private ObjectMapper objectMapper;
+
     @InjectMocks
     private TrainingService trainingService;
 
@@ -51,6 +60,11 @@ class TrainingServiceTest {
 
         when(trainingRepository.save(any(Training.class)))
                 .thenAnswer(i -> i.getArgument(0));
+        try {
+            when(objectMapper.writeValueAsString(any())).thenReturn("{}");
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
 
         Training result = trainingService.createdTraining(dto);
         assertNotNull(result);
@@ -66,7 +80,7 @@ class TrainingServiceTest {
                 .thenReturn(Optional.empty());
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> trainingService.getTraining(id));
-        assertEquals("Cannot delete: Training not found", ex.getMessage());
+        assertEquals("Training not found", ex.getMessage());
     }
 
     @Test

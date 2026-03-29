@@ -1,72 +1,119 @@
-# 🏋️ Training Service
+# Training Service
 
-Микросервис для управления процессом тренировок. Система спроектирована с учетом высоких нагрузок, используя асинхронную обработку событий, многоуровневое кэширование и пакетную запись данных.
+Production-ready backend for training plans with asynchronous processing, transactional outbox, caching, and observability.
 
----
+## Core Features
 
-## 🛠 Технологический стек
+- CRUD for trainings, exercises and sets
+- Asynchronous event flow via Kafka
+- Transactional Outbox pattern for reliable event delivery
+- Redis caching for hot reads
+- Bulk data load endpoint for stress scenarios
+- Actuator metrics for Prometheus/Grafana
 
-* **Язык**: Java 21
-* **Фреймворк**: Spring Boot 3.4.1
-* **База данных**: PostgreSQL
-* **Слой доступа к данным**: Spring Data JPA & Hibernate (с поддержкой Batch Inserts)
-* **Обмен сообщениями**: Apache Kafka (асинхронная обработка, пакетное чтение)
-* **Кэширование**: Redis
-* **Документация**: Swagger/OpenAPI
-* **Инструменты**: Lombok, Docker Compose
+## Tech Stack
 
----
+- Java 21
+- Spring Boot 3.4.x
+- Spring Web, Validation, Data JPA
+- PostgreSQL
+- Redis
+- Apache Kafka
+- OpenAPI / Swagger UI
+- Docker / Docker Compose
+- GitHub Actions CI/CD
 
-## ✨ Ключевой функционал
+## Project Layout
 
-### 1. Асинхронная обработка (Kafka)
-При создании тренировки сервис не блокирует клиента. Запрос принимается, генерируется UUID транзакции, и данные отправляются в Kafka для фоновой обработки.
-* **Producer**: Отправляет `TrainingDTO` в топик `training-events`.
-* **Consumer**: Настроен на пакетную обработку (Batch Listening) с ручным подтверждением смещений (Manual Ack), что гарантирует надежность доставки.
+- `src/main/java` - application code
+- `src/main/resources` - runtime config
+- `src/test/java` - unit/web tests
+- `src/k6` - load testing scripts
+- `.github/workflows` - CI/CD pipeline
 
-### 2. Производительность и кэширование (Redis)
-* **Чтение**: Данные о тренировках кэшируются в Redis для мгновенного доступа.
-* **Инвалидация**: При обновлении или удалении тренировки кэш автоматически актуализируется или очищается.
+## API Endpoints
 
-### 3. Массовая загрузка (Bulk Loading)
-Сервис содержит компонент `TrainingBulkLoader` для стресс-тестирования БД.
-* Позволяет генерировать до 1,000,000 записей в фоновом потоке.
-* Использует эффективную пакетную вставку (Batch Insert).
+| Method | Endpoint | Purpose |
+| :-- | :-- | :-- |
+| `POST` | `/trainings` | Create training asynchronously |
+| `GET` | `/trainings/{id}` | Get training by id |
+| `PUT` | `/trainings/{id}` | Full training update |
+| `DELETE` | `/trainings/{id}` | Delete training |
+| `PATCH` | `/trainings/sets/{setId}` | Update set weight/reps |
+| `DELETE` | `/trainings/exercises/{exerciseId}` | Delete exercise |
+| `POST` | `/trainings/bulk-load?count=100000&batchSize=5000` | Bulk insert |
 
----
+Swagger UI:
 
-## 📊 Модель данных
+- `http://localhost:8085/swagger-ui/index.html`
 
-* **Training**: Хранит общую информацию (название, дата, статус, владелец).
-* **Exercise**: Упражнения, привязанные к конкретной тренировке.
-* **ExerciseSet**: Конкретные подходы (вес, количество повторений, порядок).
+## Local Run
 
----
+1) Start dependencies:
 
-## 🚀 API Reference
+```bash
+docker compose up -d postgres redis zookeeper kafka
+```
 
-### Тренировки
-| Метод | Эндпоинт | Описание |
-| :--- | :--- | :--- |
-| `POST` | `/trainings` | Асинхронное создание тренировки. |
-| `GET` | `/trainings/{id}` | Получение тренировки (из БД или Redis). |
-| `PUT` | `/trainings/{id}` | Полное обновление данных тренировки. |
-| `DELETE` | `/trainings/{id}` | Удаление тренировки и очистка кэша. |
+2) Start service:
 
-### Упражнения и подходы
-| Метод | Эндпоинт | Описание |
-| :--- | :--- | :--- |
-| `PATCH` | `/trainings/sets/{setId}` | Частичное изменение веса/повторений в подходе. |
-| `DELETE` | `/trainings/exercises/{id}` | Удаление конкретного упражнения из программы. |
+```bash
+./mvnw spring-boot:run
+```
 
-### Системные инструменты
-* **Запуск Bulk Load**: `POST /trainings/bulk-load?count=100000&batchSize=5000`.
+3) Health check:
 
----
+```bash
+curl http://localhost:8085/actuator/health
+```
 
-## ⚙️ Настройка и запуск
+## Full Stack (App + Monitoring)
 
-1. **Инфраструктура**:
-   Убедитесь, что Docker запущен. Spring Boot автоматически поднимет PostgreSQL, Redis и Kafka через `docker-compose.yml`.
-   ```bash
-   docker-compose up -d
+```bash
+docker compose up -d
+```
+
+Useful URLs:
+
+- App: `http://localhost:8085`
+- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3000`
+
+## Build and Test
+
+```bash
+./mvnw -B -ntp clean verify
+```
+
+## CI/CD
+
+Workflow: `.github/workflows/main.yml`
+
+Pipeline includes:
+
+- dependency review for PRs
+- Maven verify with service containers (Postgres, Redis, Kafka)
+- security scanning (CodeQL + Trivy SARIF upload)
+- Docker image build and push to GHCR on `main`
+
+Image tags:
+
+- `latest`
+- `sha-<commit>`
+
+## Configuration
+
+Main runtime variables:
+
+- `SPRING_DATASOURCE_URL`
+- `SPRING_DATASOURCE_USERNAME`
+- `SPRING_DATASOURCE_PASSWORD`
+- `SPRING_KAFKA_BOOTSTRAP_SERVERS`
+- `SPRING_DATA_REDIS_HOST`
+- `SPRING_DATA_REDIS_PORT`
+
+## Next Improvements
+
+- Move all secrets to environment/GitHub Secrets
+- Add Flyway/Liquibase migrations for schema changes
+- Add Testcontainers integration tests for Kafka/PostgreSQL
