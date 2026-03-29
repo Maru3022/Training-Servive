@@ -14,6 +14,9 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   build-and-test:
     name: Build & Test
@@ -77,6 +80,8 @@ jobs:
           java-version: "21"
           distribution: "temurin"
           cache: "maven"
+      - name: Make Maven wrapper executable
+        run: chmod +x ./mvnw
       - name: Wait for dependencies
         shell: bash
         run: |
@@ -119,6 +124,8 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: java
+      - name: Make Maven wrapper executable
+        run: chmod +x ./mvnw
       - name: Build for CodeQL
         run: ./mvnw -B -ntp clean compile -DskipTests
       - name: Analyze CodeQL
