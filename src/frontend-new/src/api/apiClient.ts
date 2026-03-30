@@ -1,8 +1,11 @@
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8085';
+
 export const apiClient = axios.create({
-    baseURL: 'http://localhost:8089', // Порт вашего бэкенда
+    baseURL: API_URL,
     headers: {
         'Content-Type': 'application/json',
     },
+    timeout: 10000,
 });
