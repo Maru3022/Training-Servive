@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -27,6 +28,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TrainingController.class)
+@TestPropertySource(properties = {
+    "server.port=8085",
+    "spring.datasource.url=jdbc:postgresql://localhost:44322/mydatabase",
+    "spring.datasource.username=myuser",
+    "spring.datasource.password=secret",
+    "spring.data.redis.host=localhost",
+    "spring.data.redis.port=6379",
+    "spring.kafka.bootstrap-servers=localhost:9092"
+})
 class TrainingControllerTest {
 
     @Autowired
