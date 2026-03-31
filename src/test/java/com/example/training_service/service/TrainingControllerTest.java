@@ -28,15 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TrainingController.class)
-@TestPropertySource(properties = {
-    "server.port=8085",
-    "spring.datasource.url=jdbc:postgresql://localhost:44322/mydatabase",
-    "spring.datasource.username=myuser",
-    "spring.datasource.password=secret",
-    "spring.data.redis.host=localhost",
-    "spring.data.redis.port=6379",
-    "spring.kafka.bootstrap-servers=localhost:9092"
-})
+@org.springframework.test.context.ActiveProfiles("test")
 class TrainingControllerTest {
 
     @Autowired
