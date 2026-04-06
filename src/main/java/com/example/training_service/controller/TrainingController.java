@@ -1,5 +1,6 @@
 package com.example.training_service.controller;
 
+import com.example.training_service.TrainingBulkLoader;
 import com.example.training_service.dto.SetDTO;
 import com.example.training_service.dto.TrainingDTO;
 import com.example.training_service.model.ExerciseSet;
@@ -16,14 +17,16 @@ import java.util.UUID;
 public class TrainingController {
 
     private final TrainingService trainingService;
+    private final TrainingBulkLoader trainingBulkLoader;
 
-    public TrainingController(TrainingService trainingService) {
+    public TrainingController(TrainingService trainingService, TrainingBulkLoader trainingBulkLoader) {
         this.trainingService = trainingService;
+        this.trainingBulkLoader = trainingBulkLoader;
     }
 
     @PostMapping("/bulk-load")
     public ResponseEntity<String> triggerBulkLoad(@RequestParam int count, @RequestParam int batchSize) {
-        // Bulk load is handled asynchronously by TrainingBulkLoader
+        trainingBulkLoader.runBulkLoad(count, batchSize);
         return ResponseEntity.ok("Bulk load triggered");
     }
 
