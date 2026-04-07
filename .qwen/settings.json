@@ -8,7 +8,9 @@
       "Bash(\"c:\\program files\\git\\cmd\\git.exe\" *)",
       "Bash(progra~1\\git\\cmd\\git.exe *)",
       "Bash(where.exe *)",
-      "Bash(cmd *)"
+      "Bash(cmd *)",
+      "Bash(powershell *)",
+      "Bash(c:\\program *)"
     ]
   },
   "$version": 3
