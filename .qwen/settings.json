@@ -10,7 +10,14 @@
       "Bash(where.exe *)",
       "Bash(cmd *)",
       "Bash(powershell *)",
-      "Bash(c:\\program *)"
+      "Bash(c:\\program *)",
+      "Bash(where *)",
+      "Bash(\"c:/program files/git/cmd/git.exe\" *)",
+      "Bash(_git_check.bat)",
+      "Bash(_git_push.bat)",
+      "Bash(del *)",
+      "Bash(\"c:\\program files\\git\\bin\\bash.exe\" *)",
+      "Bash(c:\\progra~1\\git\\cmd\\git.exe *)"
     ]
   },
   "$version": 3

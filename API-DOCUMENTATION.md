@@ -54,7 +54,6 @@
 | Lombok | Boilerplate reduction (`@Data`, `@NoArgsConstructor`, `@AllArgsConstructor`) |
 | Spring Actuator + Prometheus | Health & metrics monitoring |
 | Springdoc OpenAPI | Swagger UI documentation |
-| Docker Compose | Containerization (app + PostgreSQL + Redis + Grafana) |
 | JUnit 5 + MockMvc | Testing |
 
 ---
@@ -98,14 +97,6 @@ Key configuration properties (refer to `src/main/resources/application.propertie
 | `spring.kafka.*` | Kafka broker settings |
 | `spring.jpa.*` | JPA/Hibernate configuration |
 | `management.*` | Actuator & Prometheus metrics endpoints |
-
-### compose.yaml
-
-Docker Compose services:
-- **training-service** — the Spring Boot application (port 8085)
-- **postgres** — PostgreSQL database
-- **redis** — Redis cache
-- **grafana** — Grafana dashboard for Prometheus metrics
 
 ---
 
@@ -732,21 +723,6 @@ Multi-stage build:
 1. **Build stage** — uses Maven to compile the project
 2. **Runtime stage** — uses a lightweight JRE image to run the JAR
 
-### compose.yaml
-
-Services defined:
-| Service | Port | Description |
-|---|---|---|
-| `training-service` | 8085 | The Spring Boot application |
-| `postgres` | 5432 | PostgreSQL database |
-| `redis` | 6379 | Redis cache server |
-| `grafana` | 3000 | Grafana dashboard for metrics visualization |
-
-**To start all services:**
-```bash
-docker compose up --build
-```
-
 ---
 
 ## Monitoring & Metrics
@@ -768,7 +744,7 @@ Configured via `prometheus.yml` to scrape metrics from the application. Promethe
 
 ### Grafana
 
-Accessible at `http://localhost:3000` (via Docker Compose). Pre-configured dashboards can visualize Prometheus data for monitoring service health and performance.
+Accessible at the configured Grafana URL. Pre-configured dashboards can visualize Prometheus data for monitoring service health and performance.
 
 ---
 

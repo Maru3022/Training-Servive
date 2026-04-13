@@ -20,7 +20,7 @@ Production-ready backend for training plans with asynchronous processing, transa
 - Redis
 - Apache Kafka
 - OpenAPI / Swagger UI
-- Docker / Docker Compose
+- Docker
 - GitHub Actions CI/CD
 
 ## Project Layout
@@ -49,10 +49,10 @@ Swagger UI:
 
 ## Local Run
 
-1) Start dependencies:
+1) Start dependencies (PostgreSQL, Redis, Kafka):
 
 ```bash
-docker compose up -d postgres redis zookeeper kafka
+# Start using external docker-compose or your preferred method
 ```
 
 2) Start service:
@@ -65,12 +65,6 @@ docker compose up -d postgres redis zookeeper kafka
 
 ```bash
 curl http://localhost:8085/actuator/health
-```
-
-## Full Stack (App + Monitoring)
-
-```bash
-docker compose up -d
 ```
 
 Useful URLs:
