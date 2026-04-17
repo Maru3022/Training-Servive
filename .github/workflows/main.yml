@@ -118,8 +118,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Dependency review
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && vars.ENABLE_DEPENDENCY_REVIEW == 'true'
         uses: actions/dependency-review-action@v4
+      - name: Dependency review skipped
+        if: github.event_name == 'pull_request' && vars.ENABLE_DEPENDENCY_REVIEW != 'true'
+        run: |
+          echo "Dependency review skipped."
+          echo "Enable the repository variable ENABLE_DEPENDENCY_REVIEW=true after turning on Dependency graph in Settings > Security & analysis."
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
