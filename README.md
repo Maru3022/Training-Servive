@@ -1,116 +1,86 @@
 # Training Service
 
-Production-ready backend for training plans with asynchronous processing, transactional outbox, caching, and observability.
+Training Service is a Spring Boot backend for managing workout sessions, exercise sets, and bulk-loading flows. This repository now includes a polished landing page at the root URL, improved OpenAPI presentation, and a cleaner project narrative for demos and reviews.
 
-## Core Features
+## Current Shape
 
-- CRUD for trainings, exercises and sets
-- Asynchronous event flow via Kafka
-- Transactional Outbox pattern for reliable event delivery
-- Redis caching for hot reads
-- Bulk data load endpoint for stress scenarios
-- Actuator metrics for Prometheus/Grafana
+- REST API for training CRUD and set patch operations
+- Bulk-load trigger endpoint for stress or seed scenarios
+- Swagger UI and raw OpenAPI docs out of the box
+- Actuator and Prometheus-ready metrics exposure
+- Visual landing page for faster onboarding into the service
 
-## Tech Stack
+## Stack
 
-- Java 21
-- Spring Boot 3.4.x
-- Spring Web, Validation, Data JPA
+- Java 17
+- Spring Boot 3.5.0
+- Spring Web
+- Spring Validation
+- Spring Data JPA
 - PostgreSQL
 - Redis
-- Apache Kafka
-- OpenAPI / Swagger UI
-- Docker
-- GitHub Actions CI/CD
+- Kafka
+- Springdoc OpenAPI / Swagger UI
+- Micrometer + Prometheus
+- JUnit 5 / MockMvc
 
-## Project Layout
+## What Changed In This Refresh
 
-- `src/main/java` - application code
-- `src/main/resources` - runtime config
-- `src/test/java` - unit/web tests
-- `src/k6` - load testing scripts
-- `.github/workflows` - CI/CD pipeline
+- Added a custom home page at `/` so the service looks intentional instead of blank
+- Improved Swagger/OpenAPI metadata, grouping, and request examples
+- Added validation annotations to request DTOs
+- Aligned documentation with the code that actually exists today
+- Kept the current backend behavior stable while making the project far more presentable
 
-## API Endpoints
+## Routes
 
 | Method | Endpoint | Purpose |
 | :-- | :-- | :-- |
+| `POST` | `/trainings/bulk-load` | Trigger placeholder bulk load |
 | `POST` | `/trainings` | Create training asynchronously |
 | `GET` | `/trainings/{id}` | Get training by id |
-| `PUT` | `/trainings/{id}` | Full training update |
+| `PUT` | `/trainings/{id}` | Replace training |
 | `DELETE` | `/trainings/{id}` | Delete training |
-| `PATCH` | `/trainings/sets/{setId}` | Update set weight/reps |
+| `PATCH` | `/trainings/sets/{setId}` | Patch set performance |
 | `DELETE` | `/trainings/exercises/{exerciseId}` | Delete exercise |
-| `POST` | `/trainings/bulk-load?count=100000&batchSize=5000` | Bulk insert |
 
-Swagger UI:
+## Useful URLs
 
-- `http://localhost:8085/swagger-ui/index.html`
+- App home: `http://localhost:8085/`
+- Swagger UI: `http://localhost:8085/swagger-ui/index.html`
+- OpenAPI JSON: `http://localhost:8085/v3/api-docs`
+- Health: `http://localhost:8085/actuator/health`
+- Prometheus: `http://localhost:8085/actuator/prometheus`
 
 ## Local Run
 
-1) Start dependencies (PostgreSQL, Redis, Kafka):
-
-```bash
-# Start using external docker-compose or your preferred method
-```
-
-2) Start service:
+1. Start PostgreSQL, Redis, and Kafka with your preferred local setup.
+2. Run the application:
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
-3) Health check:
+3. Open the landing page or Swagger UI in the browser.
 
-```bash
-curl http://localhost:8085/actuator/health
-```
-
-Useful URLs:
-
-- App: `http://localhost:8085`
-- Prometheus: `http://localhost:9090`
-- Grafana: `http://localhost:3000`
-
-## Build and Test
+## Build And Test
 
 ```bash
 ./mvnw -B -ntp clean verify
 ```
 
-## CI/CD
+## Architecture Reality Check
 
-Workflow: `.github/workflows/main.yml`
+The repository already contains production-oriented dependencies and CI/CD placeholders, but the service layer is still mostly stubbed. Today this project is best understood as:
 
-Pipeline includes:
+- a clean API skeleton
+- a presentation-ready backend demo
+- a good foundation for later repository, async, caching, and messaging implementations
 
-- Build & Test
-- Code Quality
-- Docker Build & Push
-- Deploy to Staging
-- Integration Tests
-- Deploy to Production
-- Notify
+## Next Good Steps
 
-Image tags:
-
-- `latest`
-- `sha-<commit>`
-
-## Configuration
-
-Main runtime variables:
-
-- `SPRING_DATASOURCE_URL`
-- `SPRING_DATASOURCE_USERNAME`
-- `SPRING_DATASOURCE_PASSWORD`
-- `SPRING_KAFKA_BOOTSTRAP_SERVERS`
-- `SPRING_DATA_REDIS_HOST`
-- `SPRING_DATA_REDIS_PORT`
-
-## Next Improvements
-
-- Move all secrets to environment/GitHub Secrets
-- Add Flyway/Liquibase migrations for schema changes
-- Add Testcontainers integration tests for Kafka/PostgreSQL
+- Add repositories and real persistence flows
+- Introduce centralized exception handling
+- Wire Kafka and Redis into live business paths
+- Add integration tests with Testcontainers
+- Introduce schema migrations with Flyway or Liquibase
