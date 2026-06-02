@@ -1,19 +1,18 @@
 package com.example.training_service.service;
 
+import com.example.training_service.TrainingBulkLoader;
 import com.example.training_service.controller.TrainingController;
 import com.example.training_service.dto.SetDTO;
 import com.example.training_service.dto.TrainingDTO;
-import com.example.training_service.TrainingBulkLoader;
-import com.example.training_service.model.ExerciseSet;
-import com.example.training_service.model.Training;
+import com.example.training_service.model.TrainingStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -42,10 +41,10 @@ class TrainingControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private TrainingBulkLoader trainingBulkLoader;
 
-    @MockBean
+    @MockitoBean
     private TrainingService trainingService;
 
     @Autowired
@@ -60,14 +59,13 @@ class TrainingControllerTest {
         trainingId = UUID.randomUUID();
         userId = UUID.randomUUID();
 
-        defaultDto = new TrainingDTO(
-                null,
-                LocalDate.now(),
-                userId,
-                "Leg Day",
-                "PLANNED",
-                List.of()
-        );
+        defaultDto = TrainingDTO.builder()
+                .training_date(LocalDate.now())
+                .user_id(userId)
+                .training_name("Leg Day")
+                .training_status(TrainingStatus.PLANNED)
+                .sets(List.of())
+                .build();
     }
 
     @Test
@@ -84,15 +82,14 @@ class TrainingControllerTest {
 
     @Test
     void postTrainings_ShouldReturnAccepted() throws Exception {
-        // Исправлено: мокаем асинхронный метод и возвращаем UUID
         when(trainingService.createdTrainingAsync(any(TrainingDTO.class))).thenReturn(trainingId);
 
         mockMvc.perform(
                         post("/trainings")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(defaultDto)))
-                .andExpect(status().isAccepted()) // Статус 202
-                .andExpect(content().string(containsString(trainingId.toString()))); // Проверка ID в теле
+                .andExpect(status().isAccepted())
+                .andExpect(content().string(containsString(trainingId.toString())));
     }
 
     @Test
@@ -107,11 +104,16 @@ class TrainingControllerTest {
 
     @Test
     void getTraining_ShouldReturnTraining() throws Exception {
-        Training training = new Training();
-        training.setId(trainingId);
-        training.setTraining_name("Morning Run");
+        TrainingDTO trainingDTO = TrainingDTO.builder()
+                .id(trainingId)
+                .training_name("Morning Run")
+                .training_date(LocalDate.now())
+                .user_id(userId)
+                .training_status(TrainingStatus.PLANNED)
+                .sets(List.of())
+                .build();
 
-        when(trainingService.getTraining(trainingId)).thenReturn(training);
+        when(trainingService.getTraining(trainingId)).thenReturn(trainingDTO);
 
         mockMvc.perform(
                         get("/trainings/{id}", trainingId))
@@ -122,19 +124,31 @@ class TrainingControllerTest {
 
     @Test
     void updateTraining_ShouldReturnOk() throws Exception {
-        TrainingDTO trainingDto = new TrainingDTO(trainingId, LocalDate.now(),
-                userId, "Update Name", "PLANNED", List.of());
+        TrainingDTO requestDto = TrainingDTO.builder()
+                .id(trainingId)
+                .training_date(LocalDate.now())
+                .user_id(userId)
+                .training_name("Update Name")
+                .training_status(TrainingStatus.PLANNED)
+                .sets(List.of())
+                .build();
 
-        Training updatedTraining = new Training();
-        updatedTraining.setId(trainingId);
-        updatedTraining.setTraining_name("Update Name");
+        TrainingDTO responseDto = TrainingDTO.builder()
+                .id(trainingId)
+                .training_date(LocalDate.now())
+                .user_id(userId)
+                .training_name("Update Name")
+                .training_status(TrainingStatus.PLANNED)
+                .sets(List.of())
+                .build();
 
-        when(trainingService.updateFullTraining(eq(trainingId), any(TrainingDTO.class))).thenReturn(updatedTraining);
+        when(trainingService.updateFullTraining(eq(trainingId), any(TrainingDTO.class)))
+                .thenReturn(responseDto);
 
         mockMvc.perform(
                         put("/trainings/{id}", trainingId)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(trainingDto))
+                                .content(objectMapper.writeValueAsString(requestDto))
                 ).andExpect(status().isOk())
                 .andExpect(jsonPath("$.training_name").value("Update Name"));
     }
@@ -154,14 +168,24 @@ class TrainingControllerTest {
     void patchSet_ShouldReturnOk() throws Exception {
         UUID setId = UUID.randomUUID();
         UUID exerciseId = UUID.randomUUID();
-        SetDTO setDTO = new SetDTO(setId, exerciseId, 50, 12, 1);
+        SetDTO setDTO = SetDTO.builder()
+                .id(setId)
+                .exercise_id(exerciseId)
+                .weight(50)
+                .reps(12)
+                .order_(1)
+                .build();
 
-        ExerciseSet patchedSet = new ExerciseSet();
-        patchedSet.setId(setId);
-        patchedSet.setWeight(50);
+        SetDTO patchedSetDTO = SetDTO.builder()
+                .id(setId)
+                .exercise_id(exerciseId)
+                .weight(50)
+                .reps(12)
+                .order_(1)
+                .build();
 
         when(trainingService.patchSetPerformance(eq(setId), any(SetDTO.class)))
-                .thenReturn(patchedSet);
+                .thenReturn(patchedSetDTO);
 
         mockMvc.perform(
                         patch("/trainings/sets/{setId}", setId)
