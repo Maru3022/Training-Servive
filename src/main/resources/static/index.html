@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Training Service is a polished API workspace for workout plans, bulk operations, observability, and fast backend delivery.">
+    <title>Training Service</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="page-shell">
+    <header class="hero">
+        <nav class="topbar">
+            <div class="brand">
+                <span class="brand-mark">TS</span>
+                <div>
+                    <p class="eyebrow">Spring Boot API</p>
+                    <h1>Training Service</h1>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <a class="ghost-link" href="/swagger-ui/index.html">Swagger</a>
+                <a class="ghost-link" href="/actuator/health">Health</a>
+            </div>
+        </nav>
+
+        <section class="hero-content">
+            <div class="hero-copy">
+                <p class="eyebrow">Workout backend, redesigned</p>
+                <h2>Beautiful API delivery for training flows, metrics, and scale testing.</h2>
+                <p class="hero-text">
+                    A visual front door for the service: clear endpoints, strong system cues,
+                    observability links, and a faster way to understand what this backend does.
+                </p>
+                <div class="hero-actions">
+                    <a class="primary-button" href="/swagger-ui/index.html">Open API Console</a>
+                    <a class="secondary-button" href="#capabilities">Explore Capabilities</a>
+                </div>
+            </div>
+
+            <div class="hero-panel">
+                <div class="metric-card">
+                    <span class="metric-label">Base Path</span>
+                    <strong>/trainings</strong>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Stack</span>
+                    <strong>Spring Boot 3.5 / Java 17</strong>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Observability</span>
+                    <strong>Actuator + Prometheus</strong>
+                </div>
+                <div class="code-preview">
+<pre><code>POST   /trainings
+GET    /trainings/{id}
+PUT    /trainings/{id}
+PATCH  /trainings/sets/{setId}
+DELETE /trainings/{id}
+POST   /trainings/bulk-load</code></pre>
+                </div>
+            </div>
+        </section>
+    </header>
+
+    <main>
+        <section class="section" id="capabilities">
+            <div class="section-heading">
+                <p class="eyebrow">What lives here</p>
+                <h3>Core capabilities presented like a real product.</h3>
+            </div>
+
+            <div class="feature-grid">
+                <article class="feature-card">
+                    <span class="feature-tag">CRUD</span>
+                    <h4>Training lifecycle endpoints</h4>
+                    <p>Create, inspect, update, and delete training sessions with clean payload examples and clear route grouping.</p>
+                </article>
+                <article class="feature-card">
+                    <span class="feature-tag">PATCH</span>
+                    <h4>Focused set updates</h4>
+                    <p>Adjust performance data without replacing full objects, useful for live workout tracking and progressive updates.</p>
+                </article>
+                <article class="feature-card">
+                    <span class="feature-tag">LOAD</span>
+                    <h4>Bulk ingestion entry point</h4>
+                    <p>Stress and seed scenarios are surfaced directly, so the system reads as engineering-ready rather than demo-only.</p>
+                </article>
+                <article class="feature-card">
+                    <span class="feature-tag">OPS</span>
+                    <h4>Operational visibility</h4>
+                    <p>Health and metrics links sit one click away, making the service easier to review, demo, and operate.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section split-section">
+            <div class="info-panel">
+                <p class="eyebrow">Quick links</p>
+                <h3>Everything important is one jump away.</h3>
+                <ul class="link-list">
+                    <li><a href="/swagger-ui/index.html">Interactive Swagger UI</a></li>
+                    <li><a href="/v3/api-docs">Raw OpenAPI JSON</a></li>
+                    <li><a href="/actuator">Actuator endpoints</a></li>
+                    <li><a href="/actuator/prometheus">Prometheus metrics</a></li>
+                </ul>
+            </div>
+
+            <div class="timeline-panel">
+                <p class="eyebrow">Delivery posture</p>
+                <div class="timeline-item">
+                    <span>01</span>
+                    <div>
+                        <h4>Readable entry point</h4>
+                        <p>The root route now explains the service in seconds instead of dropping visitors into a blank backend.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <span>02</span>
+                    <div>
+                        <h4>Sharper API storytelling</h4>
+                        <p>Swagger metadata and examples make the API feel curated and trustworthy during reviews and demos.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <span>03</span>
+                    <div>
+                        <h4>Stronger project coherence</h4>
+                        <p>Docs and runtime presentation align with the actual implementation instead of overpromising hidden layers.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-heading">
+                <p class="eyebrow">Example payload</p>
+                <h3>A cleaner contract for consumers.</h3>
+            </div>
+            <div class="payload-card">
+<pre><code>{
+  "training_date": "2026-04-17",
+  "user_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "training_name": "Strength Block A",
+  "training_status": "PLANNED",
+  "sets": [
+    {
+      "exercise_id": "550e8400-e29b-41d4-a716-446655440000",
+      "weight": 80,
+      "reps": 8,
+      "order_": 1
+    }
+  ]
+}</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
