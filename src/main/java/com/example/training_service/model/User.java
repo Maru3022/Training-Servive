@@ -6,42 +6,35 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "trainings")
+@Table(name = "users")
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Training {
+public class User {
 
     @Id
     @GeneratedValue
     private UUID id;
 
+    @Column(unique = true, nullable = false, length = 64)
+    private String username;
+
+    @Column(unique = true, nullable = false, length = 128)
+    private String email;
+
     @Column(nullable = false, length = 128)
-    private String training_name;
-
-    @Column
-    private LocalDate training_date;
-
-    @Column
-    private UUID user_id;
+    private String fullName;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 16)
-    private TrainingStatus training_status;
-
-    @OneToMany(mappedBy = "training", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<ExerciseSet> sets = new ArrayList<>();
+    @Column(nullable = false, length = 16)
+    private Role role;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
@@ -50,4 +43,8 @@ public class Training {
     @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean active = true;
 }

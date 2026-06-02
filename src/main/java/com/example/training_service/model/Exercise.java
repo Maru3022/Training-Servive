@@ -1,47 +1,41 @@
 package com.example.training_service.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "trainings")
+@Table(name = "exercises")
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Training {
+public class Exercise {
 
     @Id
     @GeneratedValue
     private UUID id;
 
     @Column(nullable = false, length = 128)
-    private String training_name;
+    private String name;
 
-    @Column
-    private LocalDate training_date;
-
-    @Column
-    private UUID user_id;
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 16)
-    private TrainingStatus training_status;
+    @Column(nullable = false, length = 16)
+    private MuscleGroup muscleGroup;
 
-    @OneToMany(mappedBy = "training", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<ExerciseSet> sets = new ArrayList<>();
+    @Column
+    private UUID createdByUserId;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
