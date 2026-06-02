@@ -2,10 +2,12 @@ package com.example.training_service.kafka;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnExpression("!'${spring.kafka.bootstrap-servers:}'.trim().isEmpty()")
 public class TrainingEventConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(TrainingEventConsumer.class);

@@ -27,6 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -37,11 +38,11 @@ public class TrainingService {
 
     private final TrainingRepository trainingRepository;
     private final ExerciseSetRepository exerciseSetRepository;
-    private final TrainingEventProducer eventProducer;
+    private final Optional<TrainingEventProducer> eventProducer;
 
     public TrainingService(TrainingRepository trainingRepository,
                            ExerciseSetRepository exerciseSetRepository,
-                           TrainingEventProducer eventProducer) {
+                           Optional<TrainingEventProducer> eventProducer) {
         this.trainingRepository = trainingRepository;
         this.exerciseSetRepository = exerciseSetRepository;
         this.eventProducer = eventProducer;
@@ -74,12 +75,12 @@ public class TrainingService {
         Training saved = trainingRepository.save(training);
 
         try {
-            eventProducer.sendTrainingCreated(TrainingCreatedEvent.builder()
+            eventProducer.ifPresent(p -> p.sendTrainingCreated(TrainingCreatedEvent.builder()
                     .trainingId(saved.getId())
                     .userId(saved.getUser_id())
                     .trainingDate(saved.getTraining_date())
                     .trainingName(saved.getTraining_name())
-                    .build());
+                    .build()));
         } catch (Exception ex) {
             log.error("Failed to publish TrainingCreatedEvent for trainingId={}: {}",
                     saved.getId(), ex.getMessage(), ex);
@@ -124,12 +125,12 @@ public class TrainingService {
 
         if (oldStatus != dto.getTraining_status()) {
             try {
-                eventProducer.sendTrainingStatusChanged(TrainingStatusChangedEvent.builder()
+                eventProducer.ifPresent(p -> p.sendTrainingStatusChanged(TrainingStatusChangedEvent.builder()
                         .trainingId(saved.getId())
                         .oldStatus(oldStatus)
                         .newStatus(saved.getTraining_status())
                         .changedAt(LocalDateTime.now())
-                        .build());
+                        .build()));
             } catch (Exception ex) {
                 log.error("Failed to publish TrainingStatusChangedEvent for trainingId={}: {}",
                         saved.getId(), ex.getMessage(), ex);
