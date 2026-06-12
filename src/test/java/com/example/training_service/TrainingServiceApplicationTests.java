@@ -6,6 +6,7 @@ import com.example.training_service.repository.ExerciseSetRepository;
 import com.example.training_service.repository.TrainingRepository;
 import com.example.training_service.repository.UserRepository;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -49,6 +50,9 @@ class TrainingServiceApplicationTests {
 
     @MockitoBean
     private KafkaTemplate<String, String> kafkaTemplate;
+
+    @MockitoBean
+    private KafkaProperties kafkaProperties;
 
     @MockitoBean(name = "sagaKafkaListenerContainerFactory")
     private ConcurrentKafkaListenerContainerFactory<String, String> sagaKafkaListenerContainerFactory;
