@@ -1,5 +1,6 @@
 package com.example.training_service;
 
+import com.example.training_service.outbox.OutboxEventRepository;
 import com.example.training_service.repository.ExerciseRepository;
 import com.example.training_service.repository.ExerciseSetRepository;
 import com.example.training_service.repository.TrainingRepository;
@@ -21,13 +22,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
                 "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration," +
                 "org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration," +
                 "org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration",
-        // Empty bootstrap-servers: disables all Kafka config/components via @ConditionalOnExpression
         "spring.kafka.bootstrap-servers="
 })
 @ActiveProfiles("test")
 class TrainingServiceApplicationTests {
 
-    // JPA repositories mocked because DataSource/JPA autoconfiguration is excluded
     @MockitoBean
     private TrainingRepository trainingRepository;
 
@@ -40,7 +39,9 @@ class TrainingServiceApplicationTests {
     @MockitoBean
     private ExerciseRepository exerciseRepository;
 
-    // Redis connection factory mocked so RedisConfig can build RedisTemplate/CacheManager
+    @MockitoBean
+    private OutboxEventRepository outboxEventRepository;
+
     @MockitoBean
     private RedisConnectionFactory redisConnectionFactory;
 
