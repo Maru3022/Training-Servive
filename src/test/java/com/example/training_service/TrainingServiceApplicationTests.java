@@ -8,6 +8,8 @@ import com.example.training_service.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -44,6 +46,12 @@ class TrainingServiceApplicationTests {
 
     @MockitoBean
     private RedisConnectionFactory redisConnectionFactory;
+
+    @MockitoBean
+    private KafkaTemplate<String, String> kafkaTemplate;
+
+    @MockitoBean(name = "sagaKafkaListenerContainerFactory")
+    private ConcurrentKafkaListenerContainerFactory<String, String> sagaKafkaListenerContainerFactory;
 
     @Test
     void contextLoads() {
