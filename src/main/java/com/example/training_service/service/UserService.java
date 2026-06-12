@@ -1,9 +1,13 @@
 package com.example.training_service.service;
 
 import com.example.training_service.dto.UserDTO;
+import com.example.training_service.event.UserCreatedEvent;
 import com.example.training_service.exception.EntityNotFoundException;
 import com.example.training_service.model.User;
+import com.example.training_service.outbox.OutboxEvent;
+import com.example.training_service.outbox.OutboxEventRepository;
 import com.example.training_service.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -17,9 +21,15 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final OutboxEventRepository outboxEventRepository;
+    private final ObjectMapper objectMapper;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository,
+                       OutboxEventRepository outboxEventRepository,
+                       ObjectMapper objectMapper) {
         this.userRepository = userRepository;
+        this.outboxEventRepository = outboxEventRepository;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -31,7 +41,32 @@ public class UserService {
                 .role(dto.getRole())
                 .active(true)
                 .build();
-        return toDTO(userRepository.save(user));
+        User saved = userRepository.save(user);
+
+        publishUserCreated(saved);
+
+        return toDTO(saved);
+    }
+
+    private void publishUserCreated(User user) {
+        try {
+            UserCreatedEvent event = UserCreatedEvent.builder()
+                    .eventId(UUID.randomUUID().toString())
+                    .userId(user.getId().toString())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .fullName(user.getFullName())
+                    .occurredAt(System.currentTimeMillis())
+                    .build();
+
+            OutboxEvent outboxEvent = new OutboxEvent();
+            outboxEvent.setTopic("user.created");
+            outboxEvent.setKey(user.getId().toString());
+            outboxEvent.setPayload(objectMapper.writeValueAsString(event));
+            outboxEventRepository.save(outboxEvent);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to serialize UserCreatedEvent", e);
+        }
     }
 
     @Cacheable(value = "users", key = "#id")
