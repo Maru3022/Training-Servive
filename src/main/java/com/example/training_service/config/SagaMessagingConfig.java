@@ -1,6 +1,7 @@
 package com.example.training_service.config;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -8,9 +9,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.converter.JsonMessageConverter;
-import org.springframework.util.backoff.FixedBackOff;
+import org.springframework.util.backoff.ExponentialBackOff;
 
 import java.util.Map;
 
@@ -28,11 +32,16 @@ public class SagaMessagingConfig {
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> sagaKafkaListenerContainerFactory(
-            ConsumerFactory<String, String> sagaConsumerFactory) {
+            ConsumerFactory<String, String> sagaConsumerFactory,
+            KafkaTemplate<String, Object> kafkaTemplate) {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(sagaConsumerFactory);
         factory.setRecordMessageConverter(new JsonMessageConverter());
-        factory.setCommonErrorHandler(new DefaultErrorHandler(new FixedBackOff(2000L, 3)));
+        factory.setCommonErrorHandler(new DefaultErrorHandler(
+                new DeadLetterPublishingRecoverer(kafkaTemplate,
+                        (record, exception) -> new TopicPartition(record.topic() + ".dlq", record.partition())),
+                new ExponentialBackOff(1000L, 5)));
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         return factory;
     }
 }

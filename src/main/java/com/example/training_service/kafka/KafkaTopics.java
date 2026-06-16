@@ -9,4 +9,8 @@ public final class KafkaTopics {
 
     public static final String SAGA_TRAINS_COMMAND = "saga-trains-command";
     public static final String SAGA_TRAINS_RESPONSE = "saga-trains-response";
+
+    public static final String SAGA_CABINET_CREATE = "saga.cabinet.create";
+    public static final String SAGA_CABINET_RESPONSE = "saga.cabinet.response";
+    public static final String SAGA_CABINET_COMPENSATE = "saga.cabinet.compensate";
 }
