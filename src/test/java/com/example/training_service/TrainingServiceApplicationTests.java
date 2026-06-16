@@ -49,7 +49,7 @@ class TrainingServiceApplicationTests {
     private RedisConnectionFactory redisConnectionFactory;
 
     @MockitoBean
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
     @MockitoBean
     private KafkaProperties kafkaProperties;
