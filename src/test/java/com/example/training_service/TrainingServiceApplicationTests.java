@@ -3,6 +3,7 @@ package com.example.training_service;
 import com.example.training_service.outbox.OutboxEventRepository;
 import com.example.training_service.repository.ExerciseRepository;
 import com.example.training_service.repository.ExerciseSetRepository;
+import com.example.training_service.repository.TrainingCabinetRepository;
 import com.example.training_service.repository.TrainingRepository;
 import com.example.training_service.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -46,10 +47,16 @@ class TrainingServiceApplicationTests {
     private OutboxEventRepository outboxEventRepository;
 
     @MockBean
+    private TrainingCabinetRepository trainingCabinetRepository;
+
+    @MockBean
     private RedisConnectionFactory redisConnectionFactory;
 
     @MockBean
     private KafkaTemplate<String, Object> kafkaTemplate;
+
+    @MockBean
+    private KafkaTemplate<String, String> outboxKafkaTemplate;
 
     @MockBean
     private KafkaProperties kafkaProperties;
