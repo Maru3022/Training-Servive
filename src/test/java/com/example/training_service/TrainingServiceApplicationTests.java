@@ -8,11 +8,11 @@ import com.example.training_service.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(properties = {
         "spring.autoconfigure.exclude=" +
@@ -30,31 +30,31 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @ActiveProfiles("test")
 class TrainingServiceApplicationTests {
 
-    @MockitoBean
+    @MockBean
     private TrainingRepository trainingRepository;
 
-    @MockitoBean
+    @MockBean
     private ExerciseSetRepository exerciseSetRepository;
 
-    @MockitoBean
+    @MockBean
     private UserRepository userRepository;
 
-    @MockitoBean
+    @MockBean
     private ExerciseRepository exerciseRepository;
 
-    @MockitoBean
+    @MockBean
     private OutboxEventRepository outboxEventRepository;
 
-    @MockitoBean
+    @MockBean
     private RedisConnectionFactory redisConnectionFactory;
 
-    @MockitoBean
+    @MockBean
     private KafkaTemplate<String, Object> kafkaTemplate;
 
-    @MockitoBean
+    @MockBean
     private KafkaProperties kafkaProperties;
 
-    @MockitoBean(name = "sagaKafkaListenerContainerFactory")
+    @MockBean(name = "sagaKafkaListenerContainerFactory")
     private ConcurrentKafkaListenerContainerFactory<String, String> sagaKafkaListenerContainerFactory;
 
     @Test
