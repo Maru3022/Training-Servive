@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: training-service
+  namespace: training
+  labels:
+    app: training-service
+spec:
+  # NodePort so you can reach it from host machine via minikube ip
+  type: NodePort
+  selector:
+    app: training-service
+  ports:
+    - name: http
+      port: 8085
+      targetPort: 8085
+      nodePort: 30085

@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: k6-load-test
+  namespace: training
+  labels:
+    app: k6
+spec:
+  # Delete job automatically 5 min after completion
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      labels:
+        app: k6
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: k6
+          # grafana/k6 image has built-in Prometheus Remote Write output
+          image: grafana/k6:0.51.0
+          args:
+            - run
+            - /scripts/script.js
+            - --out
+            - experimental-prometheus-rw
+          env:
+            - name: BASE_URL
+              value: "http://training-service:8085"
+            # Push metrics to Prometheus remote-write endpoint
+            - name: K6_PROMETHEUS_RW_SERVER_URL
+              value: "http://prometheus:9090/api/v1/write"
+            - name: K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM
+              value: "true"
+            # k6 output flush interval
+            - name: K6_PROMETHEUS_RW_FLUSH_PERIOD
+              value: "1s"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: k6-scripts
+              mountPath: /scripts
+      volumes:
+        - name: k6-scripts
+          configMap:
+            name: k6-script

@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k6-script
+  namespace: training
+data:
+  script.js: |
+    import http from 'k6/http';
+    import { check, sleep } from 'k6';
+
+    const BASE_URL = __ENV.BASE_URL || 'http://training-service:8085';
+
+    export const options = {
+      stages: [
+        { duration: '30s', target: 10 },
+        { duration: '1m',  target: 30 },
+        { duration: '2m',  target: 50 },
+        { duration: '30s', target: 80 },
+        { duration: '1m',  target: 50 },
+        { duration: '30s', target: 0  },
+      ],
+      thresholds: {
+        'http_req_duration': ['p(95)<1500'],
+        'http_req_failed':   ['rate<0.05'],
+        'checks':            ['rate>0.99'],
+      },
+    };
+
+    function rndInt(n) { return Math.floor(Math.random() * n); }
+    function rndUUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    const muscles = ['CHEST','BACK','LEGS','SHOULDERS','ARMS','CORE','FULL_BODY'];
+    const headers = { 'Content-Type': 'application/json' };
+
+    export default function () {
+      const uid = rndInt(1000000);
+      const userBody = JSON.stringify({
+        username: `user_${uid}`, email: `user_${uid}@test.com`,
+        fullName: `Test User ${uid}`, role: 'ATHLETE',
+      });
+
+      const userRes = http.post(`${BASE_URL}/users`, userBody, { headers });
+      const userOk  = check(userRes, { 'POST /users 201': r => r.status === 201 });
+
+      sleep(0.2);
+
+      const exBody = JSON.stringify({
+        name: `Exercise ${rndInt(100000)}`,
+        description: 'load test',
+        muscleGroup: muscles[rndInt(muscles.length)],
+      });
+      const exRes = http.post(`${BASE_URL}/exercises`, exBody, { headers });
+      check(exRes, { 'POST /exercises 201': r => r.status === 201 });
+
+      sleep(0.2);
+
+      if (userOk) {
+        const userId = userRes.json('id');
+        const trBody = JSON.stringify({
+          training_date: '2025-06-01', user_id: userId,
+          training_name: `LT-${rndInt(99999)}`, training_status: 'PLANNED',
+          sets: [
+            { exercise_id: rndUUID(), weight: 80, reps: 10, order_: 1 },
+            { exercise_id: rndUUID(), weight: 60, reps: 12, order_: 2 },
+          ],
+        });
+        const trRes = http.post(`${BASE_URL}/trainings`, trBody, { headers });
+        check(trRes, { 'POST /trainings 202': r => r.status === 202 });
+
+        sleep(0.3);
+
+        const listRes = http.get(`${BASE_URL}/trainings?userId=${userId}&page=0&size=10`);
+        check(listRes, { 'GET /trainings 200': r => r.status === 200 });
+
+        sleep(0.2);
+
+        const statsRes = http.get(`${BASE_URL}/users/${userId}/stats`);
+        check(statsRes, { 'GET /users/stats 200': r => r.status === 200 });
+      }
+
+      const exListRes = http.get(`${BASE_URL}/exercises?page=0&size=20`);
+      check(exListRes, { 'GET /exercises 200': r => r.status === 200 });
+
+      sleep(0.5);
+    }
