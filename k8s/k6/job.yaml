@@ -29,8 +29,6 @@ spec:
             # Push metrics to Prometheus remote-write endpoint
             - name: K6_PROMETHEUS_RW_SERVER_URL
               value: "http://prometheus:9090/api/v1/write"
-            - name: K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM
-              value: "true"
             # k6 output flush interval
             - name: K6_PROMETHEUS_RW_FLUSH_PERIOD
               value: "1s"

@@ -15,7 +15,9 @@ import java.util.UUID;
 @Repository
 public interface TrainingRepository extends JpaRepository<Training, UUID>, JpaSpecificationExecutor<Training> {
 
-    Page<Training> findByUser_id(UUID userId, Pageable pageable);
+    @Query("SELECT t FROM Training t WHERE t.user_id = :userId")
+    Page<Training> findByUserId(@Param("userId") UUID userId, Pageable pageable);
 
-    List<Training> findByUser_id(UUID userId);
+    @Query("SELECT t FROM Training t WHERE t.user_id = :userId")
+    List<Training> findByUserId(@Param("userId") UUID userId);
 }

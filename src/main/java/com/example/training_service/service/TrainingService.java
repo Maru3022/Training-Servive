@@ -184,12 +184,12 @@ public class TrainingService {
 
     @Transactional(readOnly = true)
     public Page<TrainingDTO> getTrainingsByUser(UUID userId, Pageable pageable) {
-        return trainingRepository.findByUser_id(userId, pageable).map(this::toDTO);
+        return trainingRepository.findByUserId(userId, pageable).map(this::toDTO);
     }
 
     @Transactional(readOnly = true)
     public List<Training> getRawTrainingsByUser(UUID userId) {
-        return trainingRepository.findByUser_id(userId);
+        return trainingRepository.findByUserId(userId);
     }
 
     private Training findOrThrow(UUID id) {
