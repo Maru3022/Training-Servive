@@ -43,7 +43,7 @@ public class TrainingBulkLoader {
             if (batch.size() == batchSize || i == count - 1) {
                 for (TrainingDTO t : batch) {
                     try {
-                        trainingService.createdTrainingAsync(t);
+                        trainingService.createTraining(t);
                         loaded++;
                     } catch (Exception ex) {
                         log.error("Failed to create training during bulk load: {}", ex.getMessage(), ex);

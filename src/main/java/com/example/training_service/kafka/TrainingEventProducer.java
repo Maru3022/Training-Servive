@@ -2,6 +2,7 @@ package com.example.training_service.kafka;
 
 import com.example.training_service.event.TrainingCreatedEvent;
 import com.example.training_service.event.TrainingStatusChangedEvent;
+import com.example.training_service.event.TrainingNotificationEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -27,6 +28,10 @@ public class TrainingEventProducer {
         String key = event.getTrainingId().toString();
         CompletableFuture<SendResult<String, Object>> future =
                 kafkaTemplate.send(KafkaTopics.TRAINING_CREATED, key, event);
+        kafkaTemplate.send(KafkaTopics.TRAINING_NOTIFICATIONS, key,
+                new TrainingNotificationEvent(
+                        event.getUserId(), null, event.getTrainingName(),
+                        event.getTrainingDate().toString(), "PLANNED", null, java.util.List.of()));
 
         future.whenComplete((result, ex) -> {
             if (ex != null) {

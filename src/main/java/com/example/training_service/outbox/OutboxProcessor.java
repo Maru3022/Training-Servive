@@ -21,7 +21,7 @@ public class OutboxProcessor {
     @Scheduled(fixedDelay = 3000)
     @Transactional
     public void processOutbox() {
-        List<OutboxEvent> pending = outboxEventRepository.findByStatusOrderByCreatedAt(Status.PENDING);
+        List<OutboxEvent> pending = outboxEventRepository.findByStatusOrderByCreatedAt(Status.PENDING, org.springframework.data.domain.PageRequest.of(0, 50));
         for (OutboxEvent event : pending) {
             try {
                 kafkaTemplate.send(event.getTopic(), event.getKey(), event.getPayload()).get();
@@ -29,6 +29,9 @@ public class OutboxProcessor {
                 event.setProcessedAt(LocalDateTime.now());
                 outboxEventRepository.save(event);
                 log.info("Outbox event {} sent to {}", event.getId(), event.getTopic());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("Outbox publishing interrupted", e);
             } catch (Exception e) {
                 log.error("Error sending outbox event {}: {}", event.getId(), e.getMessage());
                 event.setStatus(Status.FAILED);

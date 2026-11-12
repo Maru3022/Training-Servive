@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/exercises")
+@RequestMapping("/api/v1/exercises")
 @Tag(name = "Exercises", description = "Exercise catalogue management")
 public class ExerciseController {
 

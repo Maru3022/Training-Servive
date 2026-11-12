@@ -14,12 +14,9 @@ import com.example.training_service.repository.TrainingRepository;
 import com.example.training_service.specification.TrainingSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,9 +45,8 @@ public class TrainingService {
         this.eventProducer = eventProducer;
     }
 
-    @Async
     @Transactional
-    public UUID createdTrainingAsync(TrainingDTO dto) {
+    public UUID createTraining(TrainingDTO dto) {
         Training training = Training.builder()
                 .training_name(dto.getTraining_name())
                 .training_date(dto.getTraining_date())
@@ -89,13 +85,11 @@ public class TrainingService {
         return saved.getId();
     }
 
-    @Cacheable(value = "trainings", key = "#id")
     @Transactional(readOnly = true)
     public TrainingDTO getTraining(UUID id) {
         return toDTO(findOrThrow(id));
     }
 
-    @CacheEvict(value = "trainings", key = "#id")
     @Transactional
     public TrainingDTO updateFullTraining(UUID id, TrainingDTO dto) {
         Training training = findOrThrow(id);
@@ -140,7 +134,6 @@ public class TrainingService {
         return toDTO(saved);
     }
 
-    @CacheEvict(value = "trainings", key = "#id")
     @Transactional
     public void deleteTraining(UUID id) {
         if (!trainingRepository.existsById(id)) {

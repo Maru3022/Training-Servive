@@ -26,7 +26,8 @@ import org.springframework.test.context.ActiveProfiles;
                 "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration," +
                 "org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration," +
                 "org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration",
-        "spring.kafka.bootstrap-servers="
+        "spring.kafka.bootstrap-servers=",
+        "auth.jwt.secret=test-only-jwt-secret-with-at-least-32-bytes"
 })
 @ActiveProfiles("test")
 class TrainingServiceApplicationTests {

@@ -8,6 +8,7 @@ import com.example.training_service.model.TrainingStatus;
 import com.example.training_service.service.StatsService;
 import com.example.training_service.service.TrainingService;
 import com.example.training_service.service.UserService;
+import com.example.training_service.security.RequestIdentity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/v1/users")
 @Tag(name = "Users", description = "User management endpoints")
 public class UserController {
 
@@ -52,7 +53,10 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping
-    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody UserDTO dto) {
+    public ResponseEntity<UserDTO> createUser(
+            @RequestHeader("X-User-Role") String role,
+            @Valid @RequestBody UserDTO dto) {
+        RequestIdentity.requireAdmin(role);
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(dto));
     }
 
@@ -65,7 +69,10 @@ public class UserController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUser(
+            @RequestHeader("X-User-Id") String authenticatedId,
+            @RequestHeader("X-User-Role") String role,
             @Parameter(description = "User UUID", required = true) @PathVariable UUID id) {
+        RequestIdentity.requireOwnerOrAdmin(id, authenticatedId, role);
         return ResponseEntity.ok(userService.getById(id));
     }
 
@@ -75,7 +82,9 @@ public class UserController {
     })
     @GetMapping
     public ResponseEntity<Page<UserDTO>> getAllUsers(
+            @RequestHeader("X-User-Role") String role,
             @PageableDefault(size = 20, sort = "username") Pageable pageable) {
+        RequestIdentity.requireAdmin(role);
         return ResponseEntity.ok(userService.getAll(pageable));
     }
 
@@ -92,8 +101,14 @@ public class UserController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(
+            @RequestHeader("X-User-Id") String authenticatedId,
+            @RequestHeader("X-User-Role") String role,
             @Parameter(description = "User UUID", required = true) @PathVariable UUID id,
             @Valid @RequestBody UserDTO dto) {
+        RequestIdentity.requireOwnerOrAdmin(id, authenticatedId, role);
+        if (!"ADMIN".equals(role)) {
+            dto.setRole(userService.getById(id).getRole());
+        }
         return ResponseEntity.ok(userService.update(id, dto));
     }
 
@@ -105,7 +120,10 @@ public class UserController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> softDeleteUser(
+            @RequestHeader("X-User-Id") String authenticatedId,
+            @RequestHeader("X-User-Role") String role,
             @Parameter(description = "User UUID", required = true) @PathVariable UUID id) {
+        RequestIdentity.requireOwnerOrAdmin(id, authenticatedId, role);
         userService.softDelete(id);
         return ResponseEntity.noContent().build();
     }
@@ -118,7 +136,9 @@ public class UserController {
     })
     @DeleteMapping("/{id}/hard")
     public ResponseEntity<Void> hardDeleteUser(
+            @RequestHeader("X-User-Role") String role,
             @Parameter(description = "User UUID", required = true) @PathVariable UUID id) {
+        RequestIdentity.requireAdmin(role);
         userService.hardDelete(id);
         return ResponseEntity.noContent().build();
     }
@@ -131,8 +151,11 @@ public class UserController {
     })
     @GetMapping("/{id}/trainings")
     public ResponseEntity<Page<TrainingDTO>> getUserTrainings(
+            @RequestHeader("X-User-Id") String authenticatedId,
+            @RequestHeader("X-User-Role") String role,
             @Parameter(description = "User UUID", required = true) @PathVariable UUID id,
             @PageableDefault(size = 20) Pageable pageable) {
+        RequestIdentity.requireOwnerOrAdmin(id, authenticatedId, role);
         // Verify user exists first
         userService.getById(id);
         return ResponseEntity.ok(trainingService.getTrainingsByUser(id, pageable));
@@ -147,7 +170,15 @@ public class UserController {
     })
     @GetMapping("/{id}/stats")
     public ResponseEntity<UserStatsDTO> getUserStats(
+            @RequestHeader("X-User-Id") String authenticatedId,
+            @RequestHeader("X-User-Role") String role,
             @Parameter(description = "User UUID", required = true) @PathVariable UUID id) {
+        RequestIdentity.requireOwnerOrAdmin(id, authenticatedId, role);
         return ResponseEntity.ok(statsService.computeStats(id));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserDTO> getCurrentUser(@RequestHeader("X-User-Id") String authenticatedId) {
+        return ResponseEntity.ok(userService.getById(RequestIdentity.userId(authenticatedId)));
     }
 }

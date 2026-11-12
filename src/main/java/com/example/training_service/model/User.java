@@ -32,6 +32,9 @@ public class User {
     @Column(nullable = false, length = 128)
     private String fullName;
 
+    @Column(name = "password_hash", length = 72)
+    private String passwordHash;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
     private Role role;

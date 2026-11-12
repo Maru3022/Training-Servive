@@ -30,8 +30,7 @@ public class TrainingDTO {
     @Schema(description = "Date of the training session", example = "2025-06-01", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDate training_date;
 
-    @NotNull(message = "User ID must not be null")
-    @Schema(description = "ID of the user who owns this training", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "ID of the user who owns this training", accessMode = Schema.AccessMode.READ_ONLY)
     private UUID user_id;
 
     @NotBlank(message = "Training name must not be blank")

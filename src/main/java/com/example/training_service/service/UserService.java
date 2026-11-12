@@ -1,7 +1,9 @@
 package com.example.training_service.service;
 
 import com.example.training_service.dto.UserDTO;
+import com.example.training_service.dto.auth.RegisterRequest;
 import com.example.training_service.event.UserCreatedEvent;
+import com.example.training_service.exception.DuplicateUserException;
 import com.example.training_service.exception.EntityNotFoundException;
 import com.example.training_service.model.User;
 import com.example.training_service.outbox.OutboxEvent;
@@ -46,6 +48,27 @@ public class UserService {
         publishUserCreated(saved);
 
         return toDTO(saved);
+    }
+
+    @Transactional
+    public User registerUser(RegisterRequest request, String passwordHash) {
+        if (userRepository.existsByUsername(request.username())) {
+            throw new DuplicateUserException("Username is already registered");
+        }
+        if (userRepository.existsByEmail(request.email())) {
+            throw new DuplicateUserException("Email is already registered");
+        }
+
+        User saved = userRepository.save(User.builder()
+                .username(request.username().trim())
+                .email(request.email().trim().toLowerCase())
+                .fullName(request.fullName().trim())
+                .passwordHash(passwordHash)
+                .role(com.example.training_service.model.Role.ATHLETE)
+                .active(true)
+                .build());
+        publishUserCreated(saved);
+        return saved;
     }
 
     private void publishUserCreated(User user) {

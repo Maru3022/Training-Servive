@@ -82,7 +82,7 @@ class TrainingControllerTest {
 
     @Test
     void postTrainings_ShouldReturnAccepted() throws Exception {
-        when(trainingService.createdTrainingAsync(any(TrainingDTO.class))).thenReturn(trainingId);
+        when(trainingService.createTraining(any(TrainingDTO.class))).thenReturn(trainingId);
 
         mockMvc.perform(
                         post("/trainings")
