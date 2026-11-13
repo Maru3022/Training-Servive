@@ -151,8 +151,11 @@ public class TrainingController {
     })
     @PatchMapping("/sets/{setId}")
     public ResponseEntity<SetDTO> patchSet(
+            @RequestHeader("X-User-Id") String authenticatedId,
+            @RequestHeader("X-User-Role") String role,
             @Parameter(description = "Exercise set UUID", required = true) @PathVariable UUID setId,
             @RequestBody SetDTO setDTO) {
+        RequestIdentity.requireOwnerOrAdmin(trainingService.getSetOwnerId(setId), authenticatedId, role);
         return ResponseEntity.ok(trainingService.patchSetPerformance(setId, setDTO));
     }
 
@@ -164,7 +167,10 @@ public class TrainingController {
     })
     @DeleteMapping("/exercises/{exerciseId}")
     public ResponseEntity<Void> deleteExercise(
+            @RequestHeader("X-User-Id") String authenticatedId,
+            @RequestHeader("X-User-Role") String role,
             @Parameter(description = "Exercise set UUID", required = true) @PathVariable UUID exerciseId) {
+        RequestIdentity.requireOwnerOrAdmin(trainingService.getSetOwnerId(exerciseId), authenticatedId, role);
         trainingService.deleteSpecificTraining(exerciseId);
         return ResponseEntity.noContent().build();
     }

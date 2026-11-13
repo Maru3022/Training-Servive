@@ -199,9 +199,12 @@ class TrainingControllerTest {
 
         when(trainingService.patchSetPerformance(eq(setId), any(SetDTO.class)))
                 .thenReturn(patchedSetDTO);
+        when(trainingService.getSetOwnerId(setId)).thenReturn(userId);
 
         mockMvc.perform(
                         patch(BASE_URL + "/sets/{setId}", setId)
+                                .header("X-User-Id", userId.toString())
+                                .header("X-User-Role", "ATHLETE")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(setDTO))
                 ).andExpect(status().isOk())
@@ -213,11 +216,49 @@ class TrainingControllerTest {
     void deleteExercise_ShouldReturnNoContent() throws Exception {
         UUID exerciseId = UUID.randomUUID();
         doNothing().when(trainingService).deleteSpecificTraining(exerciseId);
+        when(trainingService.getSetOwnerId(exerciseId)).thenReturn(userId);
 
         mockMvc.perform(
                 delete(BASE_URL + "/exercises/{exerciseId}", exerciseId)
+                        .header("X-User-Id", userId.toString())
+                        .header("X-User-Role", "ATHLETE")
         ).andExpect(status().isNoContent());
 
         verify(trainingService).deleteSpecificTraining(exerciseId);
+    }
+
+    @Test
+    void patchSet_ShouldForbidDifferentUser() throws Exception {
+        UUID setId = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
+        UUID attackerId = UUID.randomUUID();
+        SetDTO request = SetDTO.builder().weight(80).reps(5).build();
+
+        when(trainingService.getSetOwnerId(setId)).thenReturn(ownerId);
+
+        mockMvc.perform(patch(BASE_URL + "/sets/{setId}", setId)
+                        .header("X-User-Id", attackerId.toString())
+                        .header("X-User-Role", "ATHLETE")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+
+        verify(trainingService, never()).patchSetPerformance(any(), any());
+    }
+
+    @Test
+    void deleteExercise_ShouldForbidDifferentUser() throws Exception {
+        UUID setId = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
+        UUID attackerId = UUID.randomUUID();
+
+        when(trainingService.getSetOwnerId(setId)).thenReturn(ownerId);
+
+        mockMvc.perform(delete(BASE_URL + "/exercises/{exerciseId}", setId)
+                        .header("X-User-Id", attackerId.toString())
+                        .header("X-User-Role", "ATHLETE"))
+                .andExpect(status().isForbidden());
+
+        verify(trainingService, never()).deleteSpecificTraining(any());
     }
 }

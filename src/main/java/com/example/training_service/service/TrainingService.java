@@ -163,6 +163,13 @@ public class TrainingService {
         return toSetDTO(saved);
     }
 
+    @Transactional(readOnly = true)
+    public UUID getSetOwnerId(UUID setId) {
+        ExerciseSet set = exerciseSetRepository.findById(setId)
+                .orElseThrow(() -> new EntityNotFoundException("ExerciseSet", setId));
+        return set.getTraining().getUser_id();
+    }
+
     @Transactional
     public void deleteSpecificTraining(UUID exerciseId) {
         ExerciseSet set = exerciseSetRepository.findById(exerciseId)
