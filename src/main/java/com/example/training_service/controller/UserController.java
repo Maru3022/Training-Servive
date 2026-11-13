@@ -29,6 +29,13 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.training_service.model.User;
 
 import java.util.UUID;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.Iterator;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -192,11 +199,8 @@ public class UserController {
         if (file.isEmpty() || file.getSize() > 5 * 1024 * 1024) {
             throw new IllegalArgumentException("Avatar must be a non-empty image up to 5 MB");
         }
-        String type = file.getContentType();
-        if (type == null || !type.startsWith("image/")) {
-            throw new IllegalArgumentException("Avatar file must be an image");
-        }
-        userService.updateAvatar(RequestIdentity.userId(authenticatedId), file.getBytes(), type);
+        AvatarImage avatar = normalizeAvatar(file.getBytes());
+        userService.updateAvatar(RequestIdentity.userId(authenticatedId), avatar.data(), avatar.contentType());
         return ResponseEntity.noContent().build();
     }
 
@@ -207,6 +211,8 @@ public class UserController {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(user.getAvatarContentType()))
                 .cacheControl(CacheControl.noCache())
+                .header("X-Content-Type-Options", "nosniff")
+                .header("Content-Security-Policy", "default-src 'none'; sandbox")
                 .body(user.getAvatarData());
     }
 
@@ -215,4 +221,38 @@ public class UserController {
         userService.deleteAvatar(RequestIdentity.userId(authenticatedId));
         return ResponseEntity.noContent().build();
     }
+
+    private AvatarImage normalizeAvatar(byte[] source) throws java.io.IOException {
+        try (ImageInputStream input = ImageIO.createImageInputStream(new ByteArrayInputStream(source))) {
+            if (input == null) throw new IllegalArgumentException("Avatar must be a JPEG or PNG image");
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(input);
+            if (!readers.hasNext()) throw new IllegalArgumentException("Avatar must be a JPEG or PNG image");
+            ImageReader reader = readers.next();
+            try {
+                reader.setInput(input, true, true);
+                String format = reader.getFormatName().toLowerCase(java.util.Locale.ROOT);
+                if (!format.equals("jpeg") && !format.equals("jpg") && !format.equals("png")) {
+                    throw new IllegalArgumentException("Avatar must be a JPEG or PNG image");
+                }
+                int width = reader.getWidth(0);
+                int height = reader.getHeight(0);
+                if (width <= 0 || height <= 0 || width > 4096 || height > 4096
+                        || (long) width * height > 16_000_000L) {
+                    throw new IllegalArgumentException("Avatar dimensions are too large");
+                }
+                BufferedImage image = reader.read(0);
+                String outputFormat = format.equals("png") ? "png" : "jpg";
+                String contentType = format.equals("png") ? MediaType.IMAGE_PNG_VALUE : MediaType.IMAGE_JPEG_VALUE;
+                ByteArrayOutputStream output = new ByteArrayOutputStream();
+                if (!ImageIO.write(image, outputFormat, output)) {
+                    throw new IllegalArgumentException("Avatar image could not be normalized");
+                }
+                return new AvatarImage(output.toByteArray(), contentType);
+            } finally {
+                reader.dispose();
+            }
+        }
+    }
+
+    private record AvatarImage(byte[] data, String contentType) {}
 }
