@@ -39,6 +39,9 @@ public class Training {
     @Column(length = 16)
     private TrainingStatus training_status;
 
+    @Column(name = "duration_minutes")
+    private Integer durationMinutes;
+
     @OneToMany(mappedBy = "training", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ExerciseSet> sets = new ArrayList<>();

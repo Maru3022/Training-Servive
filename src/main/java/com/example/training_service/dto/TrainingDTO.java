@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -41,6 +42,9 @@ public class TrainingDTO {
     @NotNull(message = "Training status must not be null")
     @Schema(description = "Current status of the training session", example = "PLANNED", requiredMode = Schema.RequiredMode.REQUIRED)
     private TrainingStatus training_status;
+
+    @Min(value = 1, message = "Duration must be at least 1 minute")
+    private Integer durationMinutes;
 
     @Valid
     @Schema(description = "List of exercise sets in this training session")

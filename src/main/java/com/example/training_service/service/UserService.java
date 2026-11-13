@@ -110,6 +110,8 @@ public class UserService {
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
         user.setFullName(dto.getFullName());
+        user.setDescription(dto.getDescription());
+        user.setBirthDate(dto.getBirthDate());
         user.setRole(dto.getRole());
         return toDTO(userRepository.save(user));
     }
@@ -131,6 +133,26 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
+    @CacheEvict(value = "users", key = "#id")
+    @Transactional
+    public void updateAvatar(UUID id, byte[] data, String contentType) {
+        User user = findOrThrow(id);
+        user.setAvatarData(data);
+        user.setAvatarContentType(contentType);
+        userRepository.save(user);
+    }
+
+    @CacheEvict(value = "users", key = "#id")
+    @Transactional
+    public void deleteAvatar(UUID id) {
+        updateAvatar(id, null, null);
+    }
+
+    @Transactional(readOnly = true)
+    public User getEntity(UUID id) {
+        return findOrThrow(id);
+    }
+
     private User findOrThrow(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User", id));
@@ -142,6 +164,9 @@ public class UserService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .fullName(user.getFullName())
+                .description(user.getDescription())
+                .birthDate(user.getBirthDate())
+                .hasAvatar(user.getAvatarData() != null && user.getAvatarData().length > 0)
                 .role(user.getRole())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())

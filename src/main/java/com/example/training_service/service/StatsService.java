@@ -70,6 +70,15 @@ public class StatsService {
                 ? (double) totalSets / completedTrainings
                 : 0.0;
 
+        double averageDurationMinutes = trainings.stream()
+                .filter(t -> t.getDurationMinutes() != null)
+                .mapToInt(Training::getDurationMinutes)
+                .average().orElse(0.0);
+        double averageWeight = allSets.stream()
+                .filter(s -> s.getWeight() != null)
+                .mapToDouble(ExerciseSet::getWeight)
+                .average().orElse(0.0);
+
         MuscleGroup mostUsedMuscleGroup = computeMostUsedMuscleGroup(allSets);
 
         return UserStatsDTO.builder()
@@ -81,6 +90,8 @@ public class StatsService {
                 .totalWeightLifted(totalWeightLifted)
                 .mostUsedMuscleGroup(mostUsedMuscleGroup)
                 .averageSetsPerTraining(averageSetsPerTraining)
+                .averageDurationMinutes(averageDurationMinutes)
+                .averageWeight(averageWeight)
                 .build();
     }
 

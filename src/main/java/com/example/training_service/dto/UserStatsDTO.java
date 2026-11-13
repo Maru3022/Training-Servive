@@ -37,4 +37,8 @@ public class UserStatsDTO {
 
     @Schema(description = "Average number of sets per completed training", example = "12.0")
     private double averageSetsPerTraining;
+
+    private double averageDurationMinutes;
+
+    private double averageWeight;
 }

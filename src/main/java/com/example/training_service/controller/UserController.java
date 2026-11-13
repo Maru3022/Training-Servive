@@ -22,7 +22,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+import org.springframework.http.CacheControl;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import com.example.training_service.model.User;
 
 import java.util.UUID;
 
@@ -180,5 +184,35 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<UserDTO> getCurrentUser(@RequestHeader("X-User-Id") String authenticatedId) {
         return ResponseEntity.ok(userService.getById(RequestIdentity.userId(authenticatedId)));
+    }
+
+    @PostMapping(value = "/me/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> uploadAvatar(@RequestHeader("X-User-Id") String authenticatedId,
+                                             @RequestPart("file") MultipartFile file) throws java.io.IOException {
+        if (file.isEmpty() || file.getSize() > 5 * 1024 * 1024) {
+            throw new IllegalArgumentException("Avatar must be a non-empty image up to 5 MB");
+        }
+        String type = file.getContentType();
+        if (type == null || !type.startsWith("image/")) {
+            throw new IllegalArgumentException("Avatar file must be an image");
+        }
+        userService.updateAvatar(RequestIdentity.userId(authenticatedId), file.getBytes(), type);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/avatar")
+    public ResponseEntity<byte[]> getAvatar(@PathVariable UUID id) {
+        User user = userService.getEntity(id);
+        if (user.getAvatarData() == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(user.getAvatarContentType()))
+                .cacheControl(CacheControl.noCache())
+                .body(user.getAvatarData());
+    }
+
+    @DeleteMapping("/me/avatar")
+    public ResponseEntity<Void> deleteAvatar(@RequestHeader("X-User-Id") String authenticatedId) {
+        userService.deleteAvatar(RequestIdentity.userId(authenticatedId));
+        return ResponseEntity.noContent().build();
     }
 }

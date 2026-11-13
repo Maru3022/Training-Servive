@@ -7,6 +7,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -31,6 +32,18 @@ public class User {
 
     @Column(nullable = false, length = 128)
     private String fullName;
+
+    @Column(length = 500)
+    private String description;
+
+    private LocalDate birthDate;
+
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "avatar_data")
+    private byte[] avatarData;
+
+    @Column(name = "avatar_content_type", length = 64)
+    private String avatarContentType;
 
     @Column(name = "password_hash", length = 72)
     private String passwordHash;

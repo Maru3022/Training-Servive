@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
@@ -39,6 +40,14 @@ public class UserDTO {
     @Size(min = 2, max = 128, message = "Full name must be between 2 and 128 characters")
     @Schema(description = "User full name", example = "John Doe", requiredMode = Schema.RequiredMode.REQUIRED)
     private String fullName;
+
+    @Size(max = 500, message = "Description must not exceed 500 characters")
+    private String description;
+
+    private LocalDate birthDate;
+
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY)
+    private boolean hasAvatar;
 
     @NotNull(message = "Role must not be null")
     @Schema(description = "User role", example = "ATHLETE", requiredMode = Schema.RequiredMode.REQUIRED)

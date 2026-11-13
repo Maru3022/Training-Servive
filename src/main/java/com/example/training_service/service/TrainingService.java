@@ -52,6 +52,7 @@ public class TrainingService {
                 .training_date(dto.getTraining_date())
                 .user_id(dto.getUser_id())
                 .training_status(dto.getTraining_status())
+                .durationMinutes(dto.getDurationMinutes())
                 .sets(new ArrayList<>())
                 .build();
 
@@ -100,6 +101,7 @@ public class TrainingService {
         training.setTraining_date(dto.getTraining_date());
         training.setUser_id(dto.getUser_id());
         training.setTraining_status(dto.getTraining_status());
+        training.setDurationMinutes(dto.getDurationMinutes());
 
         training.getSets().clear();
         if (dto.getSets() != null) {
@@ -201,6 +203,7 @@ public class TrainingService {
                 .training_date(training.getTraining_date())
                 .user_id(training.getUser_id())
                 .training_status(training.getTraining_status())
+                .durationMinutes(training.getDurationMinutes())
                 .sets(sets)
                 .createdAt(training.getCreatedAt())
                 .updatedAt(training.getUpdatedAt())

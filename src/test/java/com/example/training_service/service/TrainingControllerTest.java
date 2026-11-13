@@ -38,6 +38,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 class TrainingControllerTest {
 
+    private static final String BASE_URL = "/api/v1/trainings";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -71,7 +73,8 @@ class TrainingControllerTest {
     @Test
     void triggerBulkLoad_ShouldReturnOk() throws Exception {
         mockMvc.perform(
-                        post("/trainings/bulk-load")
+                        post(BASE_URL + "/bulk-load")
+                                .header("X-User-Role", "ADMIN")
                                 .param("count", "100")
                                 .param("batchSize", "10")
                 )
@@ -85,7 +88,8 @@ class TrainingControllerTest {
         when(trainingService.createTraining(any(TrainingDTO.class))).thenReturn(trainingId);
 
         mockMvc.perform(
-                        post("/trainings")
+                        post(BASE_URL)
+                                .header("X-User-Id", userId.toString())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(defaultDto)))
                 .andExpect(status().isAccepted())
@@ -95,7 +99,8 @@ class TrainingControllerTest {
     @Test
     void postTrainings_ShouldReturnBadRequest_WhenInvalidJson() throws Exception {
         mockMvc.perform(
-                        post("/trainings")
+                        post(BASE_URL)
+                                .header("X-User-Id", userId.toString())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("{\"invalid\": \"json\"}")
                 )
@@ -116,7 +121,9 @@ class TrainingControllerTest {
         when(trainingService.getTraining(trainingId)).thenReturn(trainingDTO);
 
         mockMvc.perform(
-                        get("/trainings/{id}", trainingId))
+                        get(BASE_URL + "/{id}", trainingId)
+                                .header("X-User-Id", userId.toString())
+                                .header("X-User-Role", "USER"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(trainingId.toString()))
                 .andExpect(jsonPath("$.training_name").value("Morning Run"));
@@ -144,9 +151,12 @@ class TrainingControllerTest {
 
         when(trainingService.updateFullTraining(eq(trainingId), any(TrainingDTO.class)))
                 .thenReturn(responseDto);
+        when(trainingService.getTraining(trainingId)).thenReturn(responseDto);
 
         mockMvc.perform(
-                        put("/trainings/{id}", trainingId)
+                        put(BASE_URL + "/{id}", trainingId)
+                                .header("X-User-Id", userId.toString())
+                                .header("X-User-Role", "USER")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(requestDto))
                 ).andExpect(status().isOk())
@@ -156,9 +166,12 @@ class TrainingControllerTest {
     @Test
     void deleteTrainings_ShouldReturnNoContent() throws Exception {
         doNothing().when(trainingService).deleteTraining(trainingId);
+        when(trainingService.getTraining(trainingId)).thenReturn(defaultDto);
 
         mockMvc.perform(
-                delete("/trainings/{id}", trainingId)
+                delete(BASE_URL + "/{id}", trainingId)
+                        .header("X-User-Id", userId.toString())
+                        .header("X-User-Role", "USER")
         ).andExpect(status().isNoContent());
 
         verify(trainingService).deleteTraining(trainingId);
@@ -188,7 +201,7 @@ class TrainingControllerTest {
                 .thenReturn(patchedSetDTO);
 
         mockMvc.perform(
-                        patch("/trainings/sets/{setId}", setId)
+                        patch(BASE_URL + "/sets/{setId}", setId)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(setDTO))
                 ).andExpect(status().isOk())
@@ -202,7 +215,7 @@ class TrainingControllerTest {
         doNothing().when(trainingService).deleteSpecificTraining(exerciseId);
 
         mockMvc.perform(
-                delete("/trainings/exercises/{exerciseId}", exerciseId)
+                delete(BASE_URL + "/exercises/{exerciseId}", exerciseId)
         ).andExpect(status().isNoContent());
 
         verify(trainingService).deleteSpecificTraining(exerciseId);
