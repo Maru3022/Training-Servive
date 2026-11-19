@@ -17,7 +17,7 @@ k8s/
 │   └── service.yaml
 ├── app/
 │   ├── deployment.yaml          ← Training Service (imagePullPolicy: Never)
-│   └── service.yaml             ← NodePort 30085
+│   └── service.yaml             ← internal ClusterIP (port 8085)
 ├── monitoring/
 │   ├── prometheus/
 │   │   ├── rbac.yaml            ← ServiceAccount + ClusterRole для pod discovery
@@ -96,8 +96,8 @@ training-service-xxx (x2)           1/1     Running   0
 
 | Сервис           | URL                              | Логин     |
 |------------------|----------------------------------|-----------|
-| Training Service | `http://<minikube-ip>:30085`     | —         |
-| Swagger UI       | `http://<minikube-ip>:30085/swagger-ui.html` | — |
+| Training Service | internal: `http://training-service:8085` | — |
+| Local diagnostics | `kubectl port-forward -n training svc/training-service 8085:8085` | — |
 | Prometheus       | `http://<minikube-ip>:30090`     | —         |
 | Grafana          | `http://<minikube-ip>:30030`     | admin/admin |
 
@@ -147,11 +147,13 @@ kubectl logs -f job/k6-load-test -n training
 Если k6 установлен локально:
 
 ```powershell
+# In a separate terminal:
+# kubectl port-forward -n training svc/training-service 8085:8085
 $ip = minikube ip
 k6 run `
   --out experimental-prometheus-rw `
   -e K6_PROMETHEUS_RW_SERVER_URL="http://${ip}:30090/api/v1/write" `
-  -e BASE_URL="http://${ip}:30085" `
+  -e BASE_URL="http://localhost:8085" `
   k8s/k6/script.js
 ```
 

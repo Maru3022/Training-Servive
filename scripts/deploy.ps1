@@ -112,8 +112,8 @@ Write-Host "================================================================" -F
 Write-Host "  DEPLOYMENT COMPLETE" -ForegroundColor Green
 Write-Host "================================================================" -ForegroundColor Green
 Write-Host ""
-Write-Host "  Training Service API : http://${ip}:30085"
-Write-Host "  Swagger UI           : http://${ip}:30085/swagger-ui.html"
+Write-Host "  Training Service API : internal only (training-service:8085)"
+Write-Host "  Local diagnostics    : kubectl port-forward -n training svc/training-service 8085:8085"
 Write-Host "  Prometheus           : http://${ip}:30090"
 Write-Host "  Grafana              : http://${ip}:30030  (admin/admin)"
 Write-Host ""
