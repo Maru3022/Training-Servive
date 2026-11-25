@@ -61,6 +61,13 @@ minikube start --memory=4096 --cpus=4 --driver=docker
 
 ## Шаг 2 — Задеплоить всё
 
+До запуска скрипта создайте namespace и секреты через настроенный Secret Manager или безопасную процедуру для кластера:
+
+- `training-postgres-credentials`: ключи `username` и `password` для PostgreSQL.
+- `fitflow-internal-secrets`: ключ `INTERNAL_GATEWAY_SECRET`, согласованный с API Gateway.
+
+Сначала примените namespace (`kubectl apply -f k8s/namespace.yaml`), затем создайте оба секрета в `training`. Не добавляйте значения или Secret-манифесты с реальными credentials в Git. Скрипт проверит наличие необходимых ключей до применения workloads.
+
 ```powershell
 # Из корня проекта
 .\scripts\deploy.ps1

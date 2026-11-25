@@ -62,6 +62,17 @@ Info "Docker image built."
 Info "Creating namespace..."
 kubectl apply -f "$K8S\namespace.yaml"
 
+Info "Checking PostgreSQL credentials Secret..."
+$postgresUsername = kubectl get secret training-postgres-credentials -n $NAMESPACE -o "jsonpath={.data.username}" 2>$null
+$postgresPassword = kubectl get secret training-postgres-credentials -n $NAMESPACE -o "jsonpath={.data.password}" 2>$null
+if ($LASTEXITCODE -ne 0 -or -not $postgresUsername -or -not $postgresPassword) {
+    Err "Create Secret training-postgres-credentials in namespace $NAMESPACE with username and password keys"
+}
+$gatewaySecret = kubectl get secret fitflow-internal-secrets -n $NAMESPACE -o "jsonpath={.data.INTERNAL_GATEWAY_SECRET}" 2>$null
+if ($LASTEXITCODE -ne 0 -or -not $gatewaySecret) {
+    Err "Create Secret fitflow-internal-secrets in namespace $NAMESPACE with an INTERNAL_GATEWAY_SECRET key"
+}
+
 Info "Deploying PostgreSQL..."
 kubectl apply -f "$K8S\postgres\pvc.yaml"
 kubectl apply -f "$K8S\postgres\deployment.yaml"

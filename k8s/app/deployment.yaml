@@ -35,9 +35,15 @@ spec:
             - name: SPRING_DATASOURCE_URL
               value: "jdbc:postgresql://postgres:5432/mydatabase"
             - name: SPRING_DATASOURCE_USERNAME
-              value: "myuser"
+              valueFrom:
+                secretKeyRef:
+                  name: training-postgres-credentials
+                  key: username
             - name: SPRING_DATASOURCE_PASSWORD
-              value: "secret"
+              valueFrom:
+                secretKeyRef:
+                  name: training-postgres-credentials
+                  key: password
             - name: SPRING_DATA_REDIS_HOST
               value: "redis"
             - name: SPRING_DATA_REDIS_PORT

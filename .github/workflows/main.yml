@@ -89,7 +89,9 @@ jobs:
       - name: Validate Kubernetes manifests
         shell: bash
         run: |
-          ./kubeconform -strict -summary -ignore-missing-schemas k8s/namespace.yaml k8s/deployment.yaml
+          find k8s -type f \( -name '*.yaml' -o -name '*.yml' \) \
+            ! -path 'k8s/deployment.yaml' -print0 \
+            | xargs -0 ./kubeconform -strict -summary -ignore-missing-schemas
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -136,4 +138,3 @@ jobs:
           digest="$(printf '%s\n' "$push_output" | awk '/digest: sha256:/ {print $2}' | tail -1)"
           test -n "$digest"
           echo "image=${image}@${digest}" >> "$GITHUB_OUTPUT"
-
