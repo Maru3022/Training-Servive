@@ -65,7 +65,6 @@ jobs:
       SPRING_DATASOURCE_PASSWORD: secret
       SPRING_DATA_REDIS_HOST: localhost
       SPRING_DATA_REDIS_PORT: 6379
-      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: prometheus,health,info
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2

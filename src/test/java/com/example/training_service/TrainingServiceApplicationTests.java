@@ -18,6 +18,10 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @SpringBootTest(properties = {
         "spring.autoconfigure.exclude=" +
                 "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration," +
@@ -77,8 +81,11 @@ class TrainingServiceApplicationTests {
 
     @Test
     void actuatorExposesOnlyHealthAndPrometheusWithoutHealthDetails() {
-        Assertions.assertEquals("health,prometheus",
-                environment.getProperty("management.endpoints.web.exposure.include"));
+        Set<String> exposedEndpoints = Arrays.stream(
+                        environment.getProperty("management.endpoints.web.exposure.include", "").split(","))
+                .map(String::trim)
+                .collect(Collectors.toSet());
+        Assertions.assertEquals(Set.of("health", "prometheus"), exposedEndpoints);
         Assertions.assertEquals("never",
                 environment.getProperty("management.endpoint.health.show-details"));
         Assertions.assertEquals("never",
