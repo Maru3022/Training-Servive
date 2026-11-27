@@ -35,9 +35,15 @@ spec:
             - name: SPRING_DATASOURCE_URL
               value: "jdbc:postgresql://postgres:5432/mydatabase"
             - name: SPRING_DATASOURCE_USERNAME
-              value: "myuser"
+              valueFrom:
+                secretKeyRef:
+                  name: training-postgres-credentials
+                  key: username
             - name: SPRING_DATASOURCE_PASSWORD
-              value: "secret"
+              valueFrom:
+                secretKeyRef:
+                  name: training-postgres-credentials
+                  key: password
             - name: SPRING_DATA_REDIS_HOST
               value: "redis"
             - name: SPRING_DATA_REDIS_PORT
@@ -51,7 +57,7 @@ spec:
               memory: "256Mi"
               cpu: "250m"
             limits:
-              memory: "512Mi"
+              memory: "768Mi"
               cpu: "500m"
           readinessProbe:
             httpGet:
@@ -60,6 +66,13 @@ spec:
             initialDelaySeconds: 120
             periodSeconds: 10
             failureThreshold: 5
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8085
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 30
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness

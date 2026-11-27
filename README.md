@@ -136,8 +136,14 @@ Training Service — один из шагов саги **CREATE_PROGRAM**, ко�
 ### Запуск
 
 ```bash
+# Set a local development password without putting it in shell history.
+read -rsp "PostgreSQL password: " POSTGRES_PASSWORD
+printf '\n'
+export POSTGRES_PASSWORD
+export SPRING_DATASOURCE_PASSWORD="$POSTGRES_PASSWORD"
+
 # поднять зависимости (пример — под свой docker-compose)
-docker run -d -p 5432:5432 -e POSTGRES_DB=training_db -e POSTGRES_USER=myuser -e POSTGRES_PASSWORD=secret postgres:16
+docker run -d -p 5432:5432 -e POSTGRES_DB=training_db -e POSTGRES_USER=myuser --env POSTGRES_PASSWORD postgres:16
 docker run -d -p 6379:6379 redis:7
 
 # собрать и запустить сервис
@@ -155,6 +161,8 @@ java -jar target/Training_Service-0.0.1-SNAPSHOT.jar
 | Prometheus | `http://localhost:8085/actuator/prometheus` |
 
 ### Развёртывание в Kubernetes
+
+Перед развёртыванием создайте в namespace `training` Secret `training-postgres-credentials` с ключами `username` и `password`. Используйте менеджер секретов или безопасный локальный ввод; не коммитьте Secret-манифесты и значения. Для приложения также требуется Secret `fitflow-internal-secrets` с ключом `INTERNAL_GATEWAY_SECRET`.
 
 Полный сценарий — Postgres, Redis, Kafka, само приложение, Prometheus и Grafana с готовыми дашбордами — описан в [`K8S-GUIDE.md`](K8S-GUIDE.md), включая запуск k6 как `Job` внутри кластера.
 

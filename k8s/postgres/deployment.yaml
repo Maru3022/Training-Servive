@@ -24,9 +24,15 @@ spec:
             - name: POSTGRES_DB
               value: "mydatabase"
             - name: POSTGRES_USER
-              value: "myuser"
+              valueFrom:
+                secretKeyRef:
+                  name: training-postgres-credentials
+                  key: username
             - name: POSTGRES_PASSWORD
-              value: "secret"
+              valueFrom:
+                secretKeyRef:
+                  name: training-postgres-credentials
+                  key: password
           resources:
             requests:
               memory: "256Mi"
@@ -39,12 +45,12 @@ spec:
               mountPath: /var/lib/postgresql/data
           readinessProbe:
             exec:
-              command: ["pg_isready", "-U", "myuser", "-d", "mydatabase"]
+              command: ["/bin/sh", "-ec", "pg_isready -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\""]
             initialDelaySeconds: 10
             periodSeconds: 5
           livenessProbe:
             exec:
-              command: ["pg_isready", "-U", "myuser", "-d", "mydatabase"]
+              command: ["/bin/sh", "-ec", "pg_isready -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\""]
             initialDelaySeconds: 30
             periodSeconds: 10
       volumes:

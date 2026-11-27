@@ -58,6 +58,16 @@ K8S="$PROJECT_DIR/k8s"
 info "Creating namespace..."
 kubectl apply -f "$K8S/namespace.yaml"
 
+info "Checking PostgreSQL credentials Secret..."
+postgres_username=$(kubectl get secret training-postgres-credentials -n "$NAMESPACE" -o 'jsonpath={.data.username}' 2>/dev/null) \
+  || error "Create Secret training-postgres-credentials in namespace ${NAMESPACE} with username and password keys"
+postgres_password=$(kubectl get secret training-postgres-credentials -n "$NAMESPACE" -o 'jsonpath={.data.password}' 2>/dev/null) \
+  || error "Create Secret training-postgres-credentials in namespace ${NAMESPACE} with username and password keys"
+gateway_secret=$(kubectl get secret fitflow-internal-secrets -n "$NAMESPACE" -o 'jsonpath={.data.INTERNAL_GATEWAY_SECRET}' 2>/dev/null) \
+  || error "Create Secret fitflow-internal-secrets in namespace ${NAMESPACE} with an INTERNAL_GATEWAY_SECRET key"
+[[ -n "$postgres_username" && -n "$postgres_password" && -n "$gateway_secret" ]] \
+  || error "Required key missing from a Training Service Kubernetes Secret"
+
 info "Deploying PostgreSQL..."
 kubectl apply -f "$K8S/postgres/pvc.yaml"
 kubectl apply -f "$K8S/postgres/deployment.yaml"

@@ -6,14 +6,21 @@ import com.example.training_service.repository.ExerciseSetRepository;
 import com.example.training_service.repository.TrainingCabinetRepository;
 import com.example.training_service.repository.TrainingRepository;
 import com.example.training_service.repository.UserRepository;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.core.env.Environment;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @SpringBootTest(properties = {
         "spring.autoconfigure.exclude=" +
@@ -31,6 +38,9 @@ import org.springframework.test.context.ActiveProfiles;
 })
 @ActiveProfiles("test")
 class TrainingServiceApplicationTests {
+
+    @Autowired
+    private Environment environment;
 
     @MockBean
     private TrainingRepository trainingRepository;
@@ -67,5 +77,18 @@ class TrainingServiceApplicationTests {
 
     @Test
     void contextLoads() {
+    }
+
+    @Test
+    void actuatorExposesOnlyHealthAndPrometheusWithoutHealthDetails() {
+        Set<String> exposedEndpoints = Arrays.stream(
+                        environment.getProperty("management.endpoints.web.exposure.include", "").split(","))
+                .map(String::trim)
+                .collect(Collectors.toSet());
+        Assertions.assertEquals(Set.of("health", "prometheus"), exposedEndpoints);
+        Assertions.assertEquals("never",
+                environment.getProperty("management.endpoint.health.show-details"));
+        Assertions.assertEquals("never",
+                environment.getProperty("management.endpoint.health.show-components"));
     }
 }
