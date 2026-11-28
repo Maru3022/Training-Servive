@@ -16,6 +16,13 @@ spec:
         app: prometheus
     spec:
       serviceAccountName: prometheus
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: prometheus
           image: prom/prometheus:v2.51.2
@@ -37,8 +44,17 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/prometheus
+              readOnly: true
             - name: data
               mountPath: /prometheus
+            - name: tmp
+              mountPath: /tmp
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
           readinessProbe:
             httpGet:
               path: /-/ready
@@ -51,3 +67,6 @@ spec:
             name: prometheus-config
         - name: data
           emptyDir: {}
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi

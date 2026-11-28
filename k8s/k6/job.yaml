@@ -14,6 +14,12 @@ spec:
         app: k6
     spec:
       restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: k6
           # grafana/k6 image has built-in Prometheus Remote Write output
@@ -42,7 +48,19 @@ spec:
           volumeMounts:
             - name: k6-scripts
               mountPath: /scripts
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
       volumes:
         - name: k6-scripts
           configMap:
             name: k6-script
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi

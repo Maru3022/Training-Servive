@@ -13,7 +13,7 @@ RUN mvn clean package -DskipTests
 # Этап 2: Создание финального легкого образа
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
-RUN addgroup -S spring && adduser -S spring -G spring
+RUN addgroup -S -g 10001 spring && adduser -S -D -H -u 10001 -G spring spring
 USER spring:spring
 
 # Копируем созданный JAR файл из этапа сборки
