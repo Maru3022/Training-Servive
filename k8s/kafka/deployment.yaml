@@ -15,10 +15,20 @@ spec:
       labels:
         app: kafka
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: kafka
           image: apache/kafka:3.7.0
           imagePullPolicy: Never
+          volumeMounts:
+            - name: kafka-data
+              mountPath: /tmp/kafka-logs
           ports:
             - containerPort: 9092
           env:
@@ -42,6 +52,8 @@ spec:
               value: "true"
             - name: CLUSTER_ID
               value: "5L6g3nShT-eMCtK--X86sw"
+            - name: KAFKA_LOG_DIRS
+              value: /tmp/kafka-logs
           resources:
             requests:
               memory: "512Mi"
@@ -55,3 +67,13 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 10
             failureThreshold: 5
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: kafka-data
+          emptyDir:
+            sizeLimit: 1Gi

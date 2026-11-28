@@ -20,10 +20,21 @@ spec:
         prometheus.io/path: "/actuator/prometheus"
         prometheus.io/port: "8085"
     spec:
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: training-service
           image: training-service:latest
           imagePullPolicy: Never          # use local Docker image (minikube)
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           ports:
             - containerPort: 8085
           env:
@@ -46,6 +57,12 @@ spec:
               value: "kafka:9092"
             - name: SPRING_JPA_HIBERNATE_DDL_AUTO
               value: "update"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Djava.io.tmpdir=/tmp -Dserver.tomcat.basedir=/tmp/tomcat"
+            - name: SERVER_SHUTDOWN
+              value: graceful
+            - name: SPRING_LIFECYCLE_TIMEOUT_PER_SHUTDOWN_PHASE
+              value: 45s
           resources:
             requests:
               memory: "256Mi"
@@ -66,3 +83,13 @@ spec:
               port: 8085
             initialDelaySeconds: 180
             periodSeconds: 15
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi
